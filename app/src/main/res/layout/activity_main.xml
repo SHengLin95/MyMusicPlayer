@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.MainActivity">
+
+    <ListView
+        android:id="@+id/main_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/main_music_control" />
+
+    <fragment
+        android:id="@+id/main_music_control"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:name="com.example.shiheng.mymusicplayer.view.MusicControlFragment"
+        tools:layout="@layout/fragment_music_control" />
+</RelativeLayout>

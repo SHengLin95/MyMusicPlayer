@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:padding="4dp">
+
+    <ImageView
+        android:id="@+id/music_control_album"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginStart="10dp"
+        android:src="@drawable/ic_launcher" />
+
+    <ImageView
+        android:id="@+id/music_control_next"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_skip_next_white_48dp"
+        android:tint="@color/error_message_background"
+        android:tintMode="src_in" />
+
+    <ImageView
+        android:id="@+id/music_control_play"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerInParent="true"
+        android:layout_toLeftOf="@id/music_control_next"
+        android:layout_toStartOf="@id/music_control_next"
+        android:src="@drawable/uamp_ic_play_arrow_white_48dp"
+        android:tint="@color/error_message_background"
+        android:tintMode="src_in" />
+
+
+    <ImageView
+        android:id="@+id/music_control_prev"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerInParent="true"
+        android:layout_toLeftOf="@id/music_control_play"
+        android:layout_toStartOf="@id/music_control_play"
+        android:src="@drawable/ic_skip_previous_white_48dp"
+        android:tint="@color/error_message_background"
+        android:tintMode="src_in" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toEndOf="@id/music_control_album"
+        android:layout_toLeftOf="@id/music_control_prev"
+        android:layout_toRightOf="@id/music_control_album"
+        android:layout_toStartOf="@id/music_control_prev"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/music_control_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="title"
+            android:textSize="23sp" />
+
+        <TextView
+            android:id="@+id/music_control_singer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="singer"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+</RelativeLayout>
