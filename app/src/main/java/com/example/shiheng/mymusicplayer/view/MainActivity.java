@@ -1,27 +1,18 @@
 package com.example.shiheng.mymusicplayer.view;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shiheng.mymusicplayer.MusicService;
@@ -42,9 +33,7 @@ public class MainActivity extends AppCompatActivity
     private MusicTask mMusicTask;
     private List<Music> mMusicList;
     private boolean isPlaying = false;
-    private boolean mBound = false;
 
-    private Messenger mMusicMessenger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,26 +59,9 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //绑定播放服务
-        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
-    }
+
 
     private void traversalAllMusic() {
         mMusicTask = new MusicTask(this, mListView);
@@ -140,35 +112,33 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void play() {
-        Message msg = Message.obtain();
+//        Message msg = Message.obtain();
+        Intent intent = new Intent(this, MusicService.class);
         if (isPlaying) {
-            msg.what = MusicService.MUSIC_PAUSE;
+//            msg.what = MusicService.MUSIC_PAUSE;
+            intent.setAction(MusicService.MUSIC_PAUSE);
             isPlaying = false;
         } else {
-            msg.what = MusicService.MUSIC_START;
+            intent.setAction(MusicService.MUSIC_START);
             isPlaying = true;
         }
 
-        try {
-            mMusicMessenger.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        startService(intent);
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d("ServiceConnect", "onServiceConnected");
-            mMusicMessenger = new Messenger(service);
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mBound = false;
-        }
-    };
+//    private ServiceConnection mConnection = new ServiceConnection() {
+//        @Override
+//        public void onServiceConnected(ComponentName name, IBinder service) {
+//            Log.d("ServiceConnect", "onServiceConnected");
+//            mMusicMessenger = new Messenger(service);
+//            mBound = true;
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName name) {
+//            mBound = false;
+//        }
+//    };
 
     @Override
     public void onFinish() {
@@ -181,17 +151,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadMusic(Music music) {
-        if (mBound) {
-            try {
-                Message msg = Message.obtain();
-                msg.what = MusicService.MUSIC_LOAD;
-                msg.getData().putString(MusicService.MUSIC_PATH_KEY, music.getPath());
-                mMusicMessenger.send(msg);
-                mControlFragment.updateInformation(music.getTitle(), music.getArtist());
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
+        Intent intent = new Intent(this, MusicService.class);
+        intent.setAction(MusicService.MUSIC_LOAD);
+        intent.putExtra(MusicService.MUSIC_PATH_KEY, music.getPath());
+        startService(intent);
+        mControlFragment.updateInformation(music.getTitle(), music.getArtist());
     }
 
 }

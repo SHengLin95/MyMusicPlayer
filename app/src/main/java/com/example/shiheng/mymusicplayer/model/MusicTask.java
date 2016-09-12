@@ -1,6 +1,5 @@
 package com.example.shiheng.mymusicplayer.model;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;

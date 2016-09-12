@@ -3,30 +3,29 @@ package com.example.shiheng.mymusicplayer;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.io.IOException;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
-    public static final int MUSIC_START = 0;
-    public static final int MUSIC_STOP = 1;
-    public static final int MUSIC_PAUSE = 2;
-    public static final int MUSIC_LOAD = 3;
+    public static final String MUSIC_START = "MyMusicPlayer.Start";
+    public static final String MUSIC_STOP = "MyMusicPlayer.Stop";
+    public static final String MUSIC_PAUSE = "MyMusicPlayer.Pause";
+    public static final String MUSIC_LOAD = "MyMusicPlayer.Load";
+    public static final String MUSIC_STOP_SERVICE = "MyMusicPlayer.StopService";
 
     public static final String MUSIC_PATH_KEY = "MyMusicPlayer.MusicPath";
 
     private boolean isFirstIn = true;
     private MediaPlayer mMediaPlayer;
-    private final Messenger messenger = new Messenger(new MusicHandler());
+//    private final Messenger messenger = new Messenger(new MusicHandler());
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return messenger.getBinder();
+        return null;
     }
 
 
@@ -34,6 +33,29 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onCreate() {
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("tag", "onStartCommand: " + intent.getAction());
+        switch (intent.getAction()) {
+            case MUSIC_START:
+                start();
+                break;
+            case MUSIC_STOP:
+                stop();
+                break;
+            case MUSIC_PAUSE:
+                pause();
+                break;
+            case MUSIC_LOAD:
+                loadMusic(intent.getStringExtra(MUSIC_PATH_KEY));
+                break;
+            case MUSIC_STOP_SERVICE:
+                stopSelf();
+                break;
+        }
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -75,23 +97,28 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer.stop();
     }
 
-    public class MusicHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MUSIC_START:
-                    start();
-                    break;
-                case MUSIC_STOP:
-                    stop();
-                    break;
-                case MUSIC_PAUSE:
-                    pause();
-                    break;
-                case MUSIC_LOAD:
-                    loadMusic(msg.getData().getString(MUSIC_PATH_KEY));
-                    break;
-            }
-        }
-    }
+//    public class MusicHandler extends Handler {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            switch (msg.what) {
+//                case MUSIC_START:
+//                    start();
+//                    break;
+//                case MUSIC_STOP:
+//                    stop();
+//                    break;
+//                case MUSIC_PAUSE:
+//                    pause();
+//                    break;
+//                case MUSIC_LOAD:
+//                    loadMusic(msg.getData().getString(MUSIC_PATH_KEY));
+//                    break;
+//                case MUSIC_STOP_SERVICE:
+//                    stopSelf();
+//                    break;
+//            }
+//        }
+//
+//    }
+
 }
