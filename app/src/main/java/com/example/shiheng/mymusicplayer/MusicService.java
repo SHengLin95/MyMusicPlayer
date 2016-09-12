@@ -3,37 +3,37 @@ package com.example.shiheng.mymusicplayer;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.support.annotation.Nullable;
 
 import java.io.IOException;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
+    public static final int MUSIC_START = 0;
+    public static final int MUSIC_STOP = 1;
+    public static final int MUSIC_PAUSE = 2;
+    public static final int MUSIC_LOAD = 3;
+
+    public static final String MUSIC_PATH_KEY = "MyMusicPlayer.MusicPath";
+
     private boolean isFirstIn = true;
     private MediaPlayer mMediaPlayer;
-    private MyBinder myBinder;
+    private final Messenger messenger = new Messenger(new MusicHandler());
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return myBinder;
+        return messenger.getBinder();
     }
 
-    @Override
-    public boolean onUnbind(Intent intent) {
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
-        return super.onUnbind(intent);
-    }
 
     @Override
     public void onCreate() {
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
-        myBinder = new MyBinder();
     }
 
     @Override
@@ -75,9 +75,23 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer.stop();
     }
 
-    public class MyBinder extends Binder {
-        public MusicService getService() {
-            return MusicService.this;
+    public class MusicHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MUSIC_START:
+                    start();
+                    break;
+                case MUSIC_STOP:
+                    stop();
+                    break;
+                case MUSIC_PAUSE:
+                    pause();
+                    break;
+                case MUSIC_LOAD:
+                    loadMusic(msg.getData().getString(MUSIC_PATH_KEY));
+                    break;
+            }
         }
     }
 }

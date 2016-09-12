@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/main_music_control" />
-
     <fragment
         android:id="@+id/main_music_control"
         android:layout_alignParentBottom="true"

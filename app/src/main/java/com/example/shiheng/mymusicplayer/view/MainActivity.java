@@ -9,6 +9,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
@@ -30,15 +33,18 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements MusicControlFragment.onMusicControlListener, MusicTask.onFinishListener {
+    private static final String TAG = "MainActivity";
+
     private static final int MY_EXTERNAL_STORAGE_PERMISSION_CODE = 123;
 
     private MusicControlFragment mControlFragment;
     private ListView mListView;
-    private MusicService mMusicService;
     private MusicTask mMusicTask;
     private List<Music> mMusicList;
     private boolean isPlaying = false;
     private boolean mBound = false;
+
+    private Messenger mMusicMessenger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +67,12 @@ public class MainActivity extends AppCompatActivity
                 showPermissionDialog();
             }
         }
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         //绑定播放服务
         bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
     }
@@ -68,9 +80,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
         if (mBound) {
             unbindService(mConnection);
-            mBound = false
+            mBound = false;
         }
     }
 
@@ -123,12 +140,19 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void play() {
+        Message msg = Message.obtain();
         if (isPlaying) {
-            mMusicService.pause();
+            msg.what = MusicService.MUSIC_PAUSE;
             isPlaying = false;
         } else {
-            mMusicService.start();
+            msg.what = MusicService.MUSIC_START;
             isPlaying = true;
+        }
+
+        try {
+            mMusicMessenger.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
@@ -136,7 +160,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d("ServiceConnect", "onServiceConnected");
-            mMusicService = ((MusicService.MyBinder) service).getService();
+            mMusicMessenger = new Messenger(service);
             mBound = true;
         }
 
@@ -158,8 +182,15 @@ public class MainActivity extends AppCompatActivity
 
     private void loadMusic(Music music) {
         if (mBound) {
-            mMusicService.loadMusic(music.getPath());
-            mControlFragment.updateInformation(music.getTitle(), music.getArtist());
+            try {
+                Message msg = Message.obtain();
+                msg.what = MusicService.MUSIC_LOAD;
+                msg.getData().putString(MusicService.MUSIC_PATH_KEY, music.getPath());
+                mMusicMessenger.send(msg);
+                mControlFragment.updateInformation(music.getTitle(), music.getArtist());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
     }
 
