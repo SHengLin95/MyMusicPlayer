@@ -4,10 +4,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.shiheng.mymusicplayer.model.Music;
+
 import java.io.IOException;
+import java.util.List;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
     public static final String MUSIC_START = "MyMusicPlayer.Start";
@@ -20,12 +24,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     private boolean isFirstIn = true;
     private MediaPlayer mMediaPlayer;
-//    private final Messenger messenger = new Messenger(new MusicHandler());
-
+    private List<Music> playList;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 
 
@@ -97,28 +100,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer.stop();
     }
 
-//    public class MusicHandler extends Handler {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            switch (msg.what) {
-//                case MUSIC_START:
-//                    start();
-//                    break;
-//                case MUSIC_STOP:
-//                    stop();
-//                    break;
-//                case MUSIC_PAUSE:
-//                    pause();
-//                    break;
-//                case MUSIC_LOAD:
-//                    loadMusic(msg.getData().getString(MUSIC_PATH_KEY));
-//                    break;
-//                case MUSIC_STOP_SERVICE:
-//                    stopSelf();
-//                    break;
-//            }
-//        }
-//
-//    }
-
+    private final IMusicControl.Stub mBinder = new IMusicControl.Stub() {
+        @Override
+        public void setMusicList(List<Music> musicList) throws RemoteException {
+            playList = musicList;
+        }
+    };
 }
