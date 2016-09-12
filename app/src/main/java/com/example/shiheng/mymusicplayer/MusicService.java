@@ -14,17 +14,22 @@ import java.io.IOException;
 import java.util.List;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
-    public static final String MUSIC_START = "MyMusicPlayer.Start";
+    private static final String TAG = "MusicService";
+
+    public static final String MUSIC_INIT = "MyMusicPlayer.Init";
+    public static final String MUSIC_PLAY = "MyMusicPlayer.Play";
     public static final String MUSIC_STOP = "MyMusicPlayer.Stop";
-    public static final String MUSIC_PAUSE = "MyMusicPlayer.Pause";
     public static final String MUSIC_LOAD = "MyMusicPlayer.Load";
     public static final String MUSIC_STOP_SERVICE = "MyMusicPlayer.StopService";
 
-    public static final String MUSIC_PATH_KEY = "MyMusicPlayer.MusicPath";
+    public static final String MUSIC_INDEX_KEY = "MyMusicPlayer.MusicIndex";
 
-    private boolean isFirstIn = true;
+    private int currentIndex = -1;
+    private boolean isPreLoad = true;
     private MediaPlayer mMediaPlayer;
     private List<Music> playList;
+    private boolean isPlaying = false;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -32,32 +37,37 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
 
+
     @Override
     public void onCreate() {
+        Log.d(TAG, "onCreate");
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("tag", "onStartCommand: " + intent.getAction());
-        switch (intent.getAction()) {
-            case MUSIC_START:
-                start();
-                break;
-            case MUSIC_STOP:
-                stop();
-                break;
-            case MUSIC_PAUSE:
-                pause();
-                break;
-            case MUSIC_LOAD:
-                loadMusic(intent.getStringExtra(MUSIC_PATH_KEY));
-                break;
-            case MUSIC_STOP_SERVICE:
-                stopSelf();
-                break;
-        }
+        Log.d(TAG, "onStartCommand: " + intent.getAction());
+        Log.d(TAG, "onStartCommand: id: " + currentIndex);
+//        switch (intent.getAction()) {
+//            case MUSIC_INIT:
+//
+//                    loadMusic(0);
+//
+//                break;
+//            case MUSIC_PLAY:
+//                play();
+//                break;
+//            case MUSIC_STOP:
+//                stop();
+//                break;
+//            case MUSIC_LOAD:
+//                loadMusic(intent.getIntExtra(MUSIC_INDEX_KEY, -1));
+//                break;
+//            case MUSIC_STOP_SERVICE:
+//                stopSelf();
+//                break;
+//        }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -71,20 +81,36 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        if (isFirstIn) {
-            isFirstIn = false;
-        } else {
+        if (!isPreLoad) {
             mMediaPlayer.start();
         }
     }
 
-    public void loadMusic(String path) {
+    public void loadMusic(int index) {
+        if (index == -1) {
+            return;
+        }
+        if (playList == null || playList.size() == 0) {
+            return;
+        }
+
         try {
             mMediaPlayer.reset();
-            mMediaPlayer.setDataSource(path);
+            mMediaPlayer.setDataSource(playList.get(index).getPath());
             mMediaPlayer.prepareAsync();
+            currentIndex = index;
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void play() {
+        if (isPlaying) {
+            pause();
+            isPlaying = false;
+        } else {
+            start();
+            isPlaying = true;
         }
     }
 
@@ -104,6 +130,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         @Override
         public void setMusicList(List<Music> musicList) throws RemoteException {
             playList = musicList;
+        }
+
+        @Override
+        public void play() throws RemoteException {
+            MusicService.this.play();
+        }
+
+        @Override
+        public void pause() throws RemoteException {
+            MusicService.this.pause();
+        }
+
+        @Override
+        public void load(int index, boolean preLoad) throws RemoteException {
+            MusicService.this.loadMusic(0);
+            isPreLoad = preLoad;
         }
     };
 }
