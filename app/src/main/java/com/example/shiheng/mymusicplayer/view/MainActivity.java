@@ -15,12 +15,14 @@ import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -35,8 +37,7 @@ import com.example.shiheng.mymusicplayer.model.MusicTask;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements IMusicController, MusicTask.onFinishListener,
-        AdapterView.OnItemClickListener {
+        implements IMusicController {
     private static final String TAG = "MainActivity";
     private static final int UI_UPDATE = 1;
     private static final int MY_EXTERNAL_STORAGE_PERMISSION_CODE = 123;
@@ -44,8 +45,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MUSIC_INDEX = "MainActivity.MusicIndex";
 
     private MusicControlFragment mControlFragment;
-    private ListView mListView;
-    private MusicTask mMusicTask;
+
     private List<Music> mMusicList;
     private IMusicControl mService;
 
@@ -56,23 +56,20 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //初始化View
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        mControlFragment = (MusicControlFragment) fragmentManager.findFragmentById(R.id.main_music_control);
-        mControlFragment.setMusicControlListener(this);
-        mListView = (ListView) findViewById(R.id.main_list);
-        mListView.setOnItemClickListener(this);
+
+
         mHandler = new UIHandler();
+
         //获取存储权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                traversalAllMusic();
+                initFragment();
             } else {
                 showPermissionDialog();
             }
         } else {
-            traversalAllMusic();
+            initFragment();
         }
 
         startService(new Intent(this, MusicService.class));
@@ -92,20 +89,31 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void traversalAllMusic() {
-        mMusicTask = new MusicTask(this, mListView);
-        mMusicTask.setOnFinishListener(this);
-        mMusicTask.execute();
+    private void initFragment() {
+        //初始化View
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mControlFragment = (MusicControlFragment) fragmentManager.findFragmentById(R.id.main_music_control);
+        mControlFragment.setMusicController(this);
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        MusicListFragment fragment = new MusicListFragment();
+        fragment.setMusicController(this);
+
+        transaction.replace(R.id.main_ll, fragment);
+        transaction.commit();
     }
 
 
+    // ---------------------------------------------------------------------------------
+    // 获取存储权限
+    // ---------------------------------------------------------------------------------
     @Override
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
         if (requestCode == MY_EXTERNAL_STORAGE_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                traversalAllMusic();
+                initFragment();
             } else {
                 Toast.makeText(this, "无法获得权限,请重试!", Toast.LENGTH_SHORT).show();
                 finish();
@@ -130,15 +138,26 @@ public class MainActivity extends AppCompatActivity
         dialog.show();
     }
 
+    // ---------------------------------------------------------------------------------
+    // 用于音乐控制的接口
+    // ---------------------------------------------------------------------------------
 
     @Override
     public void next() {
-        Toast.makeText(this, "next", Toast.LENGTH_SHORT).show();
+        loadMusic(MusicService.NEXT_INDEX_MARK);
     }
 
     @Override
     public void previous() {
-        Toast.makeText(this, "previous", Toast.LENGTH_SHORT).show();
+        loadMusic(MusicService.PREVIOUS_INDEX_MARK);
+    }
+
+
+    @Override
+    public void setMusicList(List<Music> musicList) {
+        mMusicList = musicList;
+        //绑定服务
+        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
     }
 
     @Override
@@ -149,6 +168,22 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void load(int index) {
+        loadMusic(index);
+    }
+
+    private void updateInformation(int index, boolean isPlaying) {
+        Music music = mMusicList.get(index);
+        mControlFragment.updateInformation(music.getTitle(), music.getArtist(), isPlaying);
+    }
+
+
+    // ---------------------------------------------------------------------------------
+    // 与service通信相关的接口
+    // ---------------------------------------------------------------------------------
+
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
@@ -174,39 +209,24 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    @Override
-    public void onFinish() {
 
-        //绑定服务
-        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
-
-        mMusicList = mMusicTask.getMusicList();
-
-
-    }
-
-    private void loadMusic(int index) throws RemoteException {
+    private void loadMusic(int index) {
         loadMusic(index, false);
     }
 
-    private void loadMusic(int index, boolean preLoad) throws RemoteException {
-        mService.load(index, preLoad);
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    private void loadMusic(int index, boolean preLoad) {
         try {
-            loadMusic(position);
+            mService.load(index, preLoad);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
+
     private IMusicClient.Stub mClient = new IMusicClient.Stub() {
         @Override
         public void update(int index, boolean isPlaying) throws RemoteException {
             Message msg = Message.obtain();
-
             msg.what = UI_UPDATE;
             Bundle bundle = msg.getData();
             bundle.putBoolean(IS_PLAYING, isPlaying);
@@ -214,11 +234,6 @@ public class MainActivity extends AppCompatActivity
             mHandler.sendMessage(msg);
         }
     };
-
-    private void updateInformation(int index, boolean isPlaying) {
-        Music music = mMusicList.get(index);
-        mControlFragment.updateInformation(music.getTitle(), music.getArtist(), isPlaying);
-    }
 
     private class UIHandler extends Handler {
         @Override

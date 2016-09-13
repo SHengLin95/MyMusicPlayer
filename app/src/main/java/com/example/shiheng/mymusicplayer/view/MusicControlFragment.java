@@ -85,7 +85,7 @@ public class MusicControlFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    public void setMusicControlListener(IMusicController controller) {
+    public void setMusicController(IMusicController controller) {
         mController = controller;
     }
 

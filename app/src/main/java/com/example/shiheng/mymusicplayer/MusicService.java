@@ -17,13 +17,8 @@ import java.util.List;
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
     private static final String TAG = "MusicService";
 
-    public static final String MUSIC_INIT = "MyMusicPlayer.Init";
-    public static final String MUSIC_PLAY = "MyMusicPlayer.Play";
-    public static final String MUSIC_STOP = "MyMusicPlayer.Stop";
-    public static final String MUSIC_LOAD = "MyMusicPlayer.Load";
-    public static final String MUSIC_STOP_SERVICE = "MyMusicPlayer.StopService";
-
-    public static final String MUSIC_INDEX_KEY = "MyMusicPlayer.MusicIndex";
+    public static final int PREVIOUS_INDEX_MARK = -3;
+    public static final int NEXT_INDEX_MARK = -4;
 
     private int currentIndex = -1;
     private boolean isPreLoad = true;
@@ -76,6 +71,21 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
         if (playList == null || playList.size() == 0) {
             return;
+        }
+
+        switch (index) {
+            case PREVIOUS_INDEX_MARK:
+                index = currentIndex;
+                if (--index < 0) {
+                    index = playList.size() - 1;
+                }
+                break;
+            case NEXT_INDEX_MARK:
+                index = currentIndex;
+                if (++index == playList.size()) {
+                    index = 0;
+                }
+                break;
         }
 
         try {
@@ -151,8 +161,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         @Override
-        public int getCurIndex(int index) throws RemoteException {
-            return index;
+        public int getCurIndex() throws RemoteException {
+            return currentIndex;
         }
 
         @Override
