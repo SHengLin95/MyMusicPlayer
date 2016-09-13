@@ -63,14 +63,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:lines="1"
             android:text="title"
-            android:textSize="23sp" />
+            android:textSize="22sp" />
 
         <TextView
             android:id="@+id/music_control_singer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="singer"
+            android:lines="1"
+            android:text="artist"
             android:textSize="15sp" />
     </LinearLayout>
 

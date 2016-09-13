@@ -11,6 +11,7 @@ import android.util.Log;
 import com.example.shiheng.mymusicplayer.model.Music;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
@@ -30,6 +31,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private List<Music> playList;
     private boolean isPlaying = false;
 
+    private List<IMusicClient> mClients;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -37,37 +40,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
 
-
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
+        mClients = new ArrayList<>();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand: " + intent.getAction());
-        Log.d(TAG, "onStartCommand: id: " + currentIndex);
-//        switch (intent.getAction()) {
-//            case MUSIC_INIT:
-//
-//                    loadMusic(0);
-//
-//                break;
-//            case MUSIC_PLAY:
-//                play();
-//                break;
-//            case MUSIC_STOP:
-//                stop();
-//                break;
-//            case MUSIC_LOAD:
-//                loadMusic(intent.getIntExtra(MUSIC_INDEX_KEY, -1));
-//                break;
-//            case MUSIC_STOP_SERVICE:
-//                stopSelf();
-//                break;
-//        }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -83,7 +65,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onPrepared(MediaPlayer mp) {
         if (!isPreLoad) {
             mMediaPlayer.start();
+            isPlaying = true;
         }
+        notifyDataChange();
     }
 
     public void loadMusic(int index) {
@@ -112,6 +96,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             start();
             isPlaying = true;
         }
+        notifyDataChange();
     }
 
     public void start() {
@@ -124,6 +109,19 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void stop() {
         mMediaPlayer.stop();
+    }
+
+    private void notifyDataChange() {
+        if (mClients.size() == 0) {
+            return;
+        }
+        try {
+            for (IMusicClient client : mClients) {
+                client.update(currentIndex, isPlaying);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     private final IMusicControl.Stub mBinder = new IMusicControl.Stub() {
@@ -144,8 +142,27 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         @Override
         public void load(int index, boolean preLoad) throws RemoteException {
-            MusicService.this.loadMusic(0);
-            isPreLoad = preLoad;
+            if (currentIndex == index) {
+                MusicService.this.play();
+            } else {
+                MusicService.this.loadMusic(index);
+                isPreLoad = preLoad;
+            }
+        }
+
+        @Override
+        public int getCurIndex(int index) throws RemoteException {
+            return index;
+        }
+
+        @Override
+        public void registerClient(IMusicClient client) throws RemoteException {
+            mClients.add(client);
+        }
+
+        @Override
+        public void unregisterClient(IMusicClient client) throws RemoteException {
+            mClients.remove(client);
         }
     };
 }

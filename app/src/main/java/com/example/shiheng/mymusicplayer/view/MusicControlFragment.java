@@ -10,19 +10,19 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.shiheng.mymusicplayer.IMusicController;
 import com.example.shiheng.mymusicplayer.R;
 
 public class MusicControlFragment extends Fragment implements View.OnClickListener {
-    private onMusicControlListener mControlListener;
+    private IMusicController mController;
     private ImageView mAlbumImageView;
     private ImageView mPrevImageView;
     private ImageView mNextImageView;
     private ImageView mPlayImageView;
 
     private TextView mTitleTextView;
-    private TextView mSingerTextview;
+    private TextView mArtistTextView;
 
-    private boolean isPlaying = false;
 
     @Nullable
     @Override
@@ -39,37 +39,37 @@ public class MusicControlFragment extends Fragment implements View.OnClickListen
         mPlayImageView.setOnClickListener(this);
 
         mTitleTextView = (TextView) view.findViewById(R.id.music_control_title);
-        mSingerTextview = (TextView) view.findViewById(R.id.music_control_singer);
+        mArtistTextView = (TextView) view.findViewById(R.id.music_control_singer);
 
         return view;
     }
 
     @Override
     public void onClick(View v) {
-        if (mControlListener == null) {
+        if (mController == null) {
             return;
         }
         switch (v.getId()) {
             case R.id.music_control_prev:
-                mControlListener.previous();
+                mController.previous();
                 break;
             case R.id.music_control_next:
-                mControlListener.next();
+                mController.next();
                 break;
             case R.id.music_control_play:
-                toggleImage();
-                mControlListener.play();
+                mController.play();
                 break;
         }
     }
 
-    public void updateInformation(String title, String artist) {
-        updateInformation(title, artist, null);
+    public void updateInformation(String title, String artist, boolean isPlaying) {
+        updateInformation(title, artist, isPlaying, null);
     }
 
-    public void updateInformation(String title, String artist, Bitmap album) {
+    public void updateInformation(String title, String artist, boolean isPlaying, Bitmap album) {
         mTitleTextView.setText(title);
-        mSingerTextview.setText(artist);
+        mArtistTextView.setText(artist);
+        toggleImage(isPlaying);
         if (album != null) {
             mAlbumImageView.setImageBitmap(album);
         } else {
@@ -77,26 +77,17 @@ public class MusicControlFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    private void toggleImage() {
-        if (isPlaying) {
+    private void toggleImage(boolean isPlaying) {
+        if (!isPlaying) {
             mPlayImageView.setImageResource(R.drawable.uamp_ic_play_arrow_white_48dp);
-            isPlaying = false;
         } else {
             mPlayImageView.setImageResource(R.drawable.uamp_ic_pause_white_48dp);
-            isPlaying = true;
         }
     }
 
-    public void setMusicControlListener(onMusicControlListener listener) {
-        mControlListener = listener;
+    public void setMusicControlListener(IMusicController controller) {
+        mController = controller;
     }
 
-    public interface onMusicControlListener {
-        void next();
 
-        void previous();
-
-        void play();
-
-    }
 }

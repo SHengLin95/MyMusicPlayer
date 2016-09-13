@@ -3,6 +3,7 @@ package com.example.shiheng.mymusicplayer;
 
 // Declare any non-default types here with import statements
 import com.example.shiheng.mymusicplayer.model.Music;
+import com.example.shiheng.mymusicplayer.IMusicClient;
 interface IMusicControl {
     /**
      * Demonstrates some basic types that you can use as parameters
@@ -13,4 +14,7 @@ interface IMusicControl {
     void play();
     void pause();
     void load(in int index, in boolean preLoad);
+    int getCurIndex(in int index);
+    void registerClient(IMusicClient client);
+    void unregisterClient(IMusicClient client);
 }

@@ -5,11 +5,16 @@
     android:layout_height="match_parent"
     tools:context=".view.MainActivity">
 
-    <ListView
-        android:id="@+id/main_list"
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/main_ll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/main_music_control" />
+    <ListView
+        android:id="@+id/main_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
     <fragment
         android:id="@+id/main_music_control"
         android:layout_alignParentBottom="true"

@@ -8,8 +8,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
-import android.os.Messenger;
+import android.os.Message;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -18,10 +19,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.shiheng.mymusicplayer.IMusicClient;
 import com.example.shiheng.mymusicplayer.IMusicControl;
+import com.example.shiheng.mymusicplayer.IMusicController;
 import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
@@ -30,17 +35,21 @@ import com.example.shiheng.mymusicplayer.model.MusicTask;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements MusicControlFragment.onMusicControlListener, MusicTask.onFinishListener {
+        implements IMusicController, MusicTask.onFinishListener,
+        AdapterView.OnItemClickListener {
     private static final String TAG = "MainActivity";
-
+    private static final int UI_UPDATE = 1;
     private static final int MY_EXTERNAL_STORAGE_PERMISSION_CODE = 123;
+    private static final String IS_PLAYING = "MainActivity.isPlaying";
+    private static final String MUSIC_INDEX = "MainActivity.MusicIndex";
 
     private MusicControlFragment mControlFragment;
     private ListView mListView;
     private MusicTask mMusicTask;
     private List<Music> mMusicList;
-    //    private boolean isPlaying = false;
     private IMusicControl mService;
+
+    private UIHandler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,10 +60,9 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
         mControlFragment = (MusicControlFragment) fragmentManager.findFragmentById(R.id.main_music_control);
         mControlFragment.setMusicControlListener(this);
-
         mListView = (ListView) findViewById(R.id.main_list);
-
-
+        mListView.setOnItemClickListener(this);
+        mHandler = new UIHandler();
         //获取存储权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -74,7 +82,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mConnection);
+        try {
+            if (mService != null) {
+                mService.unregisterClient(mClient);
+                unbindService(mConnection);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     private void traversalAllMusic() {
@@ -85,7 +100,9 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
         if (requestCode == MY_EXTERNAL_STORAGE_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 traversalAllMusic();
@@ -139,6 +156,7 @@ public class MainActivity extends AppCompatActivity
             Log.d("ServiceConnect", "onServiceConnected");
             mService = IMusicControl.Stub.asInterface(service);
             try {
+                mService.registerClient(mClient);
                 mService.setMusicList(mMusicList);
                 loadMusic(0, true);
             } catch (RemoteException e) {
@@ -148,12 +166,17 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            try {
+                mService.unregisterClient(mClient);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
     };
 
     @Override
     public void onFinish() {
+
         //绑定服务
         bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
 
@@ -162,24 +185,50 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-//    private void initMusicService() {
-//        Intent intent = new Intent(this, MusicService.class);
-//        intent.setAction(MusicService.MUSIC_INIT);
-//        startService(intent);
-//
-//        Music music = mMusicList.get(0);
-//        mControlFragment.updateInformation(music.getTitle(), music.getArtist());
-//    }
-
-
     private void loadMusic(int index) throws RemoteException {
         loadMusic(index, false);
     }
 
     private void loadMusic(int index, boolean preLoad) throws RemoteException {
-
         mService.load(index, preLoad);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        try {
+            loadMusic(position);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private IMusicClient.Stub mClient = new IMusicClient.Stub() {
+        @Override
+        public void update(int index, boolean isPlaying) throws RemoteException {
+            Message msg = Message.obtain();
+
+            msg.what = UI_UPDATE;
+            Bundle bundle = msg.getData();
+            bundle.putBoolean(IS_PLAYING, isPlaying);
+            bundle.putInt(MUSIC_INDEX, index);
+            mHandler.sendMessage(msg);
+        }
+    };
+
+    private void updateInformation(int index, boolean isPlaying) {
         Music music = mMusicList.get(index);
-        mControlFragment.updateInformation(music.getTitle(), music.getArtist());
+        mControlFragment.updateInformation(music.getTitle(), music.getArtist(), isPlaying);
+    }
+
+    private class UIHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UI_UPDATE:
+                    Bundle bundle = msg.getData();
+                    updateInformation(bundle.getInt(MUSIC_INDEX), bundle.getBoolean(IS_PLAYING));
+                    break;
+            }
+        }
     }
 }
