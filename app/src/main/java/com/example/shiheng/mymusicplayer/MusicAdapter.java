@@ -1,6 +1,7 @@
 package com.example.shiheng.mymusicplayer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,12 +13,27 @@ import com.example.shiheng.mymusicplayer.model.Music;
 import java.util.List;
 
 public class MusicAdapter extends BaseAdapter {
+    private static final int VIEW_TYPE_COUNT = 2;
+    private static final int VIEW_TYPE_DEFAULT = 0;
+    private static final int VIEW_TYPE_SELECTED = 1;
+    private int curIndex = 0;
     private Context context;
     private List<Music> mData;
 
     public MusicAdapter(Context context, List<Music> musicList) {
         this.context = context;
         mData = musicList;
+    }
+
+
+    @Override
+    public int getViewTypeCount() {
+        return VIEW_TYPE_COUNT;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position == curIndex ? VIEW_TYPE_SELECTED : VIEW_TYPE_DEFAULT;
     }
 
     @Override
@@ -49,6 +65,10 @@ public class MusicAdapter extends BaseAdapter {
         }
         Music music = mData.get(position);
         viewHolder.title.setText(music.getTitle());
+        if (getItemViewType(position) == VIEW_TYPE_SELECTED) {
+            viewHolder.title.setTextColor(Color.RED);
+
+        }
         viewHolder.artistAndAlbum.setText(music.getArtist() + " - " + music.getAlbum());
         return convertView;
     }
@@ -56,5 +76,10 @@ public class MusicAdapter extends BaseAdapter {
     private class ViewHolder {
         TextView title;
         TextView artistAndAlbum;
+    }
+
+    public MusicAdapter setCurIndex(int curIndex) {
+        this.curIndex = curIndex;
+        return this;
     }
 }

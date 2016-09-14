@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.shiheng.mymusicplayer.IMusicController;
+import com.example.shiheng.mymusicplayer.MusicAdapter;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
 import com.example.shiheng.mymusicplayer.model.MusicTask;
@@ -21,8 +22,7 @@ public class MusicListFragment extends Fragment implements MusicTask.onFinishLis
     private IMusicController mController;
     private ListView mListView;
     private List<Music> mMusicList;
-    private MusicTask mMusicTask;
-
+    private MusicAdapter mAdapter;
 
     public void setMusicController(IMusicController controller) {
         mController = controller;
@@ -30,7 +30,8 @@ public class MusicListFragment extends Fragment implements MusicTask.onFinishLis
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_list, null);
         mListView = (ListView) view.findViewById(R.id.fragment_list_lv);
         mListView.setOnItemClickListener(this);
@@ -39,22 +40,33 @@ public class MusicListFragment extends Fragment implements MusicTask.onFinishLis
     }
 
     private void traversalAllMusic() {
-        mMusicTask = new MusicTask(getContext(), mListView);
-        mMusicTask.setOnFinishListener(this);
-        mMusicTask.execute();
+        MusicTask musicTask = new MusicTask(getContext());
+        musicTask.setOnFinishListener(this);
+        musicTask.execute();
     }
 
     /**
      * MusicTask回调接口
+     * @param musics
      */
     @Override
-    public void onFinish() {
-        mMusicList = mMusicTask.getMusicList();
+    public void onFinish(List<Music> musics) {
+
+        mMusicList = musics;
         mController.setMusicList(mMusicList);
+        mAdapter = new MusicAdapter(getContext(), musics);
+        mListView.setAdapter(mAdapter);
+
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         mController.load(position);
     }
+
+    public void updateList(int index) {
+        mAdapter.setCurIndex(index).notifyDataSetChanged();
+    }
+
+
 }

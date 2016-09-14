@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MUSIC_INDEX = "MainActivity.MusicIndex";
 
     private MusicControlFragment mControlFragment;
+    private MusicListFragment mMusicListFragment;
 
     private List<Music> mMusicList;
     private IMusicControl mService;
@@ -96,10 +97,9 @@ public class MainActivity extends AppCompatActivity
         mControlFragment.setMusicController(this);
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        MusicListFragment fragment = new MusicListFragment();
-        fragment.setMusicController(this);
-
-        transaction.replace(R.id.main_ll, fragment);
+        mMusicListFragment = new MusicListFragment();
+        mMusicListFragment.setMusicController(this);
+        transaction.replace(R.id.main_ll, mMusicListFragment);
         transaction.commit();
     }
 
@@ -177,6 +177,8 @@ public class MainActivity extends AppCompatActivity
     private void updateInformation(int index, boolean isPlaying) {
         Music music = mMusicList.get(index);
         mControlFragment.updateInformation(music.getTitle(), music.getArtist(), isPlaying);
+        if (mMusicListFragment != null)
+            mMusicListFragment.updateList(index);
     }
 
 
@@ -246,4 +248,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
+
 }

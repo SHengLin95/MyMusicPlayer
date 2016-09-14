@@ -13,14 +13,12 @@ import java.util.List;
 
 public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
     private Context context;
-    private ListView listView;
     private onFinishListener mListener;
     private List<Music> musicList;
+    private MusicAdapter adapter;
 
-
-    public MusicTask(Context context, ListView listView) {
+    public MusicTask(Context context) {
         this.context = context;
-        this.listView = listView;
     }
 
     @Override
@@ -58,18 +56,15 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
 
     @Override
     protected void onPostExecute(List<Music> musics) {
-        MusicAdapter adapter = new MusicAdapter(context, musics);
-        listView.setAdapter(adapter);
+        adapter = new MusicAdapter(context, musics);
+
         if (mListener != null) {
-            mListener.onFinish();
+            mListener.onFinish(musics);
         }
     }
 
-    public List<Music> getMusicList() {
-        return musicList;
-    }
 
     public interface onFinishListener {
-        void onFinish();
+        void onFinish(List<Music> musics);
     }
 }

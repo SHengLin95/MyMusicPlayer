@@ -153,7 +153,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         @Override
         public void load(int index, boolean preLoad) throws RemoteException {
             if (currentIndex == index) {
-                MusicService.this.play();
+                if (!preLoad) {
+                    MusicService.this.play();
+                } else {
+                    notifyDataChange();
+                }
             } else {
                 MusicService.this.loadMusic(index);
                 isPreLoad = preLoad;
