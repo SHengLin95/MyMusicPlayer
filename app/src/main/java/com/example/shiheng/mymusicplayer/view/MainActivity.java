@@ -1,31 +1,20 @@
 package com.example.shiheng.mymusicplayer.view;
 
-import android.Manifest;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import com.example.shiheng.mymusicplayer.IMusicClient;
 import com.example.shiheng.mymusicplayer.IMusicControl;
@@ -33,7 +22,6 @@ import com.example.shiheng.mymusicplayer.IMusicController;
 import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
-import com.example.shiheng.mymusicplayer.model.MusicTask;
 
 import java.util.List;
 
@@ -48,6 +36,9 @@ public class MainActivity extends AppCompatActivity
     private MusicControlFragment mControlFragment;
     private MusicListFragment mMusicListFragment;
 
+    private Toolbar mToolbar;
+    private DrawerLayout mDrawerLayout;
+
     private List<Music> mMusicList;
     private IMusicControl mService;
 
@@ -59,8 +50,14 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        setSupportActionBar(mToolbar);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
 
         mHandler = new UIHandler();
         initFragment();
