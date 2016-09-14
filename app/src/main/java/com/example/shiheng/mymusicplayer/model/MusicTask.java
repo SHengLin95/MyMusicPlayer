@@ -15,7 +15,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
     private Context context;
     private onFinishListener mListener;
     private List<Music> musicList;
-    private MusicAdapter adapter;
+//    private MusicAdapter adapter;
 
     public MusicTask(Context context) {
         this.context = context;
@@ -56,7 +56,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
 
     @Override
     protected void onPostExecute(List<Music> musics) {
-        adapter = new MusicAdapter(context, musics);
+//        adapter = new MusicAdapter(context, musics);
 
         if (mListener != null) {
             mListener.onFinish(musics);
