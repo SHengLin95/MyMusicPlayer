@@ -72,5 +72,6 @@ public class LogoActivity extends AppCompatActivity {
 
     private void startMainActivity() {
         startActivity(new Intent(this, MainActivity.class));
+        this.finish();
     }
 }
