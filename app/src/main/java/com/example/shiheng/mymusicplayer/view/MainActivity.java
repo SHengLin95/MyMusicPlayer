@@ -28,8 +28,6 @@ public class MainActivity extends BaseActivity
     private static final int INIT_FRAGMENT = 2;
 
 
-    private static final String IS_PLAYING = "MainActivity.isPlaying";
-    private static final String MUSIC_INDEX = "MainActivity.MusicIndex";
 
     public static final String MUSIC_LIST = "MainActivity.MusicIndex";
 
@@ -173,7 +171,6 @@ public class MainActivity extends BaseActivity
             switch (msg.what) {
                 case INIT_FRAGMENT:
                     initFragment();
-
 //                    break;
                 case UI_UPDATE:
                     updateInformation();
