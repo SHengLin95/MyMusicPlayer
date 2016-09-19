@@ -3,6 +3,7 @@ package com.example.shiheng.mymusicplayer.view;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -50,14 +51,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        setSupportActionBar(mToolbar);
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
+        initView();
 
         mHandler = new UIHandler();
         initFragment();
@@ -66,6 +60,7 @@ public class MainActivity extends AppCompatActivity
         startService(new Intent(this, MusicService.class));
 
     }
+
 
     @Override
     protected void onDestroy() {
@@ -80,8 +75,19 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void initView() {
+        //初始化toolbar
+        mToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        setSupportActionBar(mToolbar);
+        mToolbar.setTitleTextColor(Color.WHITE);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+    }
+
     private void initFragment() {
-        //初始化View
         FragmentManager fragmentManager = getSupportFragmentManager();
         mControlFragment = (MusicControlFragment) fragmentManager.findFragmentById(R.id.main_music_control);
         mControlFragment.setMusicController(this);

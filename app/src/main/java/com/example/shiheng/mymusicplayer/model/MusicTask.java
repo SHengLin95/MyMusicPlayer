@@ -14,7 +14,7 @@ import java.util.List;
 public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
     private Context context;
     private onFinishListener mListener;
-    private List<Music> musicList;
+//    private List<Music> musicList;
 //    private MusicAdapter adapter;
 
     public MusicTask(Context context) {
@@ -23,7 +23,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
 
     @Override
     protected List<Music> doInBackground(Void... params) {
-        musicList = new ArrayList<>();
+        List<Music> musicList = new ArrayList<>();
         Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 null, null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         int[] columnIndexes = new int[]{

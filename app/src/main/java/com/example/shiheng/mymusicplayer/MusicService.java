@@ -9,12 +9,13 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.shiheng.mymusicplayer.model.Music;
+import com.example.shiheng.mymusicplayer.model.MusicTask;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MusicService extends Service implements MediaPlayer.OnPreparedListener {
+public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MusicTask.onFinishListener {
     private static final String TAG = "MusicService";
 
     public static final int PREVIOUS_INDEX_MARK = -3;
@@ -179,4 +180,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             mClients.remove(client);
         }
     };
+
+    @Override
+    public void onFinish(List<Music> musics) {
+        playList = musics;
+    }
 }
