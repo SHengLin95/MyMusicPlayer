@@ -69,6 +69,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (!isPreLoad) {
             mMediaPlayer.start();
             isPlaying = true;
+        } else {
+            isPreLoad = false;
         }
         notifyDataChange();
     }
@@ -137,7 +139,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         int len = mClients.beginBroadcast();
         try {
             for (int i = 0; i < len; i++) {
-                mClients.getBroadcastItem(i).update(currentIndex, isPlaying);
+                mClients.getBroadcastItem(i).update();
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -164,22 +166,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         @Override
-        public void load(int index, boolean preLoad) throws RemoteException {
+        public void load(int index) throws RemoteException {
             if (currentIndex == index) {
-                if (!preLoad) {
-                    MusicService.this.play();
-                } else {
-                    notifyDataChange();
-                }
+                MusicService.this.play();
             } else {
                 MusicService.this.loadMusic(index);
-                isPreLoad = preLoad;
             }
         }
 
         @Override
         public int getCurIndex() throws RemoteException {
             return currentIndex;
+        }
+
+        @Override
+        public boolean isPlaying() throws RemoteException {
+            return isPlaying;
         }
 
         @Override
@@ -192,12 +194,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         public void unregisterClient(IMusicClient client) throws RemoteException {
             mClients.unregister(client);
         }
+
     };
 
 
     @Override
     public void onFinish(List<Music> musics) {
         playList = musics;
+        loadMusic(0);
         notifyDataChange();
     }
 }

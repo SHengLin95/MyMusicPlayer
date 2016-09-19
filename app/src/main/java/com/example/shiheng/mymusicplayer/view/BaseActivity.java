@@ -12,7 +12,6 @@ import com.example.shiheng.mymusicplayer.IMusicControl;
 import com.example.shiheng.mymusicplayer.model.Music;
 
 import java.util.List;
-import java.util.Observer;
 
 public abstract class BaseActivity extends AppCompatActivity {
     protected List<Music> mMusicList;
@@ -47,12 +46,12 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected IMusicClient.Stub mClient = new IMusicClient.Stub() {
         @Override
-        public void update(int index, boolean isPlaying) throws RemoteException {
-            onDataChanged(index, isPlaying);
+        public void update() throws RemoteException {
+            onDataChanged();
         }
     };
 
-    protected abstract void onDataChanged(int index, boolean isPlaying);
+    protected abstract void onDataChanged();
 
     @Override
     protected void onDestroy() {

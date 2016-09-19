@@ -1,25 +1,18 @@
 package com.example.shiheng.mymusicplayer.view;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
-import android.os.Parcelable;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
-import com.example.shiheng.mymusicplayer.IMusicClient;
-import com.example.shiheng.mymusicplayer.IMusicControl;
 import com.example.shiheng.mymusicplayer.IMusicController;
 import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
@@ -67,8 +60,6 @@ public class MainActivity extends BaseActivity
     }
 
 
-
-
     private void initView() {
         //初始化toolbar
         mToolbar = (Toolbar) findViewById(R.id.main_toolbar);
@@ -92,7 +83,6 @@ public class MainActivity extends BaseActivity
         transaction.replace(R.id.main_ll, mMusicListFragment);
         transaction.commit();
     }
-
 
 
     // ---------------------------------------------------------------------------------
@@ -131,12 +121,19 @@ public class MainActivity extends BaseActivity
         loadMusic(index);
     }
 
-    private void updateInformation(int index, boolean isPlaying) {
-        Music music = mMusicList.get(index);
-        mControlFragment.updateInformation(music.getTitle(), music.getArtist(), isPlaying);
-        if (mMusicListFragment != null)
-            mMusicListFragment.updateList(index);
+    private void updateInformation() {
+        try {
+            int index = mService.getCurIndex();
+            Music music = mMusicList.get(index);
+            mControlFragment.updateInformation(music.getTitle(), music.getArtist(), mService.isPlaying());
+            if (mMusicListFragment != null) {
+                mMusicListFragment.updateList(index);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
+
 
 
     // ---------------------------------------------------------------------------------
@@ -144,12 +141,8 @@ public class MainActivity extends BaseActivity
     // ---------------------------------------------------------------------------------
 
     private void loadMusic(int index) {
-        loadMusic(index, false);
-    }
-
-    private void loadMusic(int index, boolean preLoad) {
         try {
-            mService.load(index, preLoad);
+            mService.load(index);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -168,12 +161,9 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    protected void onDataChanged(int index, boolean isPlaying) {
+    protected void onDataChanged() {
         Message msg = Message.obtain();
         msg.what = UI_UPDATE;
-        Bundle bundle = msg.getData();
-        bundle.putBoolean(IS_PLAYING, isPlaying);
-        bundle.putInt(MUSIC_INDEX, index);
         mHandler.sendMessage(msg);
     }
 
@@ -181,13 +171,14 @@ public class MainActivity extends BaseActivity
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case UI_UPDATE:
-                    Bundle bundle = msg.getData();
-                    updateInformation(bundle.getInt(MUSIC_INDEX), bundle.getBoolean(IS_PLAYING));
-                    break;
                 case INIT_FRAGMENT:
                     initFragment();
+
+//                    break;
+                case UI_UPDATE:
+                    updateInformation();
                     break;
+
             }
         }
     }

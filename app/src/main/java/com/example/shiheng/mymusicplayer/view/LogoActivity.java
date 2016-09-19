@@ -87,7 +87,7 @@ public class LogoActivity extends BaseActivity {
     }
 
     @Override
-    protected void onDataChanged(int index, boolean isPlaying) {
+    protected void onDataChanged() {
         mHandler.post(new Runnable() {
             @Override
             public void run() {

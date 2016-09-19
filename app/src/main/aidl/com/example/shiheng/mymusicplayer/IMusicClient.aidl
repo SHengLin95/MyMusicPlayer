@@ -5,5 +5,5 @@ package com.example.shiheng.mymusicplayer;
 import com.example.shiheng.mymusicplayer.model.Music;
 
 interface IMusicClient {
-    void update(int index, boolean isPlaying);
+    void update();
 }

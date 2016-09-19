@@ -13,8 +13,9 @@ interface IMusicControl {
     List<Music> getMusicList();
     void play();
     void pause();
-    void load(in int index, in boolean preLoad);
+    void load(in int index);
     int getCurIndex();
     void registerClient(IMusicClient client);
     void unregisterClient(IMusicClient client);
+    boolean isPlaying();
 }
