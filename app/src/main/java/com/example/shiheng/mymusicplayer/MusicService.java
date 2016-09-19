@@ -4,16 +4,20 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.shiheng.mymusicplayer.model.Music;
 import com.example.shiheng.mymusicplayer.model.MusicTask;
+import com.example.shiheng.mymusicplayer.view.MainActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Observable;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MusicTask.onFinishListener {
     private static final String TAG = "MusicService";
@@ -27,11 +31,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private List<Music> playList;
     private boolean isPlaying = false;
 
-    private List<IMusicClient> mClients;
+    private RemoteCallbackList<IMusicClient> mClients;
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        MusicTask musicTask = new MusicTask(this);
+        musicTask.setOnFinishListener(this);
+        musicTask.execute();
         return mBinder;
     }
 
@@ -41,7 +48,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         Log.d(TAG, "onCreate");
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
-        mClients = new ArrayList<>();
+        mClients = new RemoteCallbackList<>();
     }
 
     @Override
@@ -123,22 +130,27 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void notifyDataChange() {
-        if (mClients.size() == 0) {
-            return;
-        }
+//        if (mClients.size() == 0) {
+//            return;
+//        }
+
+        int len = mClients.beginBroadcast();
         try {
-            for (IMusicClient client : mClients) {
-                client.update(currentIndex, isPlaying);
+            for (int i = 0; i < len; i++) {
+                mClients.getBroadcastItem(i).update(currentIndex, isPlaying);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+        mClients.finishBroadcast();
+
+
     }
 
     private final IMusicControl.Stub mBinder = new IMusicControl.Stub() {
         @Override
-        public void setMusicList(List<Music> musicList) throws RemoteException {
-            playList = musicList;
+        public List<Music> getMusicList() throws RemoteException {
+            return playList;
         }
 
         @Override
@@ -172,17 +184,20 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         @Override
         public void registerClient(IMusicClient client) throws RemoteException {
-            mClients.add(client);
+            mClients.register(client);
+//            Log.d(TAG, "registerClient: " + mClients.indexOf(client));
         }
 
         @Override
         public void unregisterClient(IMusicClient client) throws RemoteException {
-            mClients.remove(client);
+            mClients.unregister(client);
         }
     };
+
 
     @Override
     public void onFinish(List<Music> musics) {
         playList = musics;
+        notifyDataChange();
     }
 }

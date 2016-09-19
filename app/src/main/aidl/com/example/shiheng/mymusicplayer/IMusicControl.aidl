@@ -10,7 +10,7 @@ interface IMusicControl {
      * and return values in AIDL.
      */
 
-    void setMusicList(in List<Music> musicList);
+    List<Music> getMusicList();
     void play();
     void pause();
     void load(in int index, in boolean preLoad);

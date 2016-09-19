@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Parcelable;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -24,24 +25,27 @@ import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivity
         implements IMusicController {
     private static final String TAG = "MainActivity";
     private static final int UI_UPDATE = 1;
+    private static final int INIT_FRAGMENT = 2;
+
 
     private static final String IS_PLAYING = "MainActivity.isPlaying";
     private static final String MUSIC_INDEX = "MainActivity.MusicIndex";
 
+    public static final String MUSIC_LIST = "MainActivity.MusicIndex";
+
+    private FragmentManager mFragmentManager;
     private MusicControlFragment mControlFragment;
     private MusicListFragment mMusicListFragment;
-
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
 
-    private List<Music> mMusicList;
-    private IMusicControl mService;
 
     private UIHandler mHandler;
 
@@ -51,29 +55,19 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mHandler = new UIHandler();
+        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
+
         initView();
 
-        mHandler = new UIHandler();
-        initFragment();
-
-
-        startService(new Intent(this, MusicService.class));
+        mFragmentManager = getSupportFragmentManager();
+        mControlFragment = (MusicControlFragment) mFragmentManager.findFragmentById(R.id.main_music_control);
+        mControlFragment.setMusicController(this);
 
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        try {
-            if (mService != null) {
-                mService.unregisterClient(mClient);
-                unbindService(mConnection);
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     private void initView() {
         //初始化toolbar
@@ -88,12 +82,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        mControlFragment = (MusicControlFragment) fragmentManager.findFragmentById(R.id.main_music_control);
-        mControlFragment.setMusicController(this);
 
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
         mMusicListFragment = new MusicListFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList) mMusicList);
+        mMusicListFragment.setArguments(bundle);
         mMusicListFragment.setMusicController(this);
         transaction.replace(R.id.main_ll, mMusicListFragment);
         transaction.commit();
@@ -120,7 +114,7 @@ public class MainActivity extends AppCompatActivity
     public void setMusicList(List<Music> musicList) {
         mMusicList = musicList;
         //绑定服务
-        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -149,32 +143,6 @@ public class MainActivity extends AppCompatActivity
     // 与service通信相关的接口
     // ---------------------------------------------------------------------------------
 
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d("ServiceConnect", "onServiceConnected");
-            mService = IMusicControl.Stub.asInterface(service);
-            try {
-                mService.registerClient(mClient);
-                mService.setMusicList(mMusicList);
-                loadMusic(0, true);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            try {
-                mService.unregisterClient(mClient);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-    };
-
-
     private void loadMusic(int index) {
         loadMusic(index, false);
     }
@@ -188,17 +156,26 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private IMusicClient.Stub mClient = new IMusicClient.Stub() {
-        @Override
-        public void update(int index, boolean isPlaying) throws RemoteException {
-            Message msg = Message.obtain();
-            msg.what = UI_UPDATE;
-            Bundle bundle = msg.getData();
-            bundle.putBoolean(IS_PLAYING, isPlaying);
-            bundle.putInt(MUSIC_INDEX, index);
-            mHandler.sendMessage(msg);
-        }
-    };
+    // ---------------------------------------------------------------------------------
+    // BaseActivity相关的接口
+    // ---------------------------------------------------------------------------------
+
+    @Override
+    protected void onServiceConnected() {
+        Message msg = Message.obtain();
+        msg.what = INIT_FRAGMENT;
+        mHandler.sendMessage(msg);
+    }
+
+    @Override
+    protected void onDataChanged(int index, boolean isPlaying) {
+        Message msg = Message.obtain();
+        msg.what = UI_UPDATE;
+        Bundle bundle = msg.getData();
+        bundle.putBoolean(IS_PLAYING, isPlaying);
+        bundle.putInt(MUSIC_INDEX, index);
+        mHandler.sendMessage(msg);
+    }
 
     private class UIHandler extends Handler {
         @Override
@@ -207,6 +184,9 @@ public class MainActivity extends AppCompatActivity
                 case UI_UPDATE:
                     Bundle bundle = msg.getData();
                     updateInformation(bundle.getInt(MUSIC_INDEX), bundle.getBoolean(IS_PLAYING));
+                    break;
+                case INIT_FRAGMENT:
+                    initFragment();
                     break;
             }
         }

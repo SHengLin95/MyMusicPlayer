@@ -6,33 +6,38 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 
-public class LogoActivity extends AppCompatActivity {
+public class LogoActivity extends BaseActivity {
     private static final int MY_EXTERNAL_STORAGE_PERMISSION_CODE = 123;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_load);
+        mHandler = new Handler();
         //获取存储权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                startMainActivity();
+                startService();
             } else {
                 showPermissionDialog();
             }
         } else {
-            startMainActivity();
+            startService();
         }
     }
 
@@ -45,7 +50,7 @@ public class LogoActivity extends AppCompatActivity {
 
         if (requestCode == MY_EXTERNAL_STORAGE_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startMainActivity();
+                startService();
             } else {
                 Toast.makeText(this, "无法获得权限,请重试!", Toast.LENGTH_SHORT).show();
                 finish();
@@ -70,8 +75,36 @@ public class LogoActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void startMainActivity() {
-        startActivity(new Intent(this, MainActivity.class));
-        this.finish();
+    private void startService() {
+//        startService(new Intent(this, MusicService.class));
+        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
+    }
+
+
+    @Override
+    protected void onServiceConnected() {
+
+    }
+
+    @Override
+    protected void onDataChanged(int index, boolean isPlaying) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.d("LogoActivity", "run");
+                    startActivity(new Intent(LogoActivity.this, MainActivity.class));
+                    LogoActivity.this.finish();
+                    mService.unregisterClient(mClient);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
