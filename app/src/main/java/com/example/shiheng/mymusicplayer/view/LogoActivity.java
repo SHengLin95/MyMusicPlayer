@@ -77,7 +77,7 @@ public class LogoActivity extends BaseActivity {
 
     private void startService() {
 //        startService(new Intent(this, MusicService.class));
-        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
+        bindService();
     }
 
 
@@ -92,7 +92,6 @@ public class LogoActivity extends BaseActivity {
             @Override
             public void run() {
                 try {
-                    Log.d("LogoActivity", "run");
                     startActivity(new Intent(LogoActivity.this, MainActivity.class));
                     LogoActivity.this.finish();
                     mService.unregisterClient(mClient);

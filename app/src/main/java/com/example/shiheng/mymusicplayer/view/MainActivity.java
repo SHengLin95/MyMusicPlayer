@@ -1,6 +1,7 @@
 package com.example.shiheng.mymusicplayer.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,12 +18,12 @@ import com.example.shiheng.mymusicplayer.IMusicController;
 import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
+import com.example.shiheng.mymusicplayer.utils.MediaUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends BaseActivity
-        implements IMusicController {
+public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
     private static final int UI_UPDATE = 1;
     private static final int INIT_FRAGMENT = 2;
@@ -47,7 +48,8 @@ public class MainActivity extends BaseActivity
         setContentView(R.layout.activity_main);
 
         mHandler = new UIHandler();
-        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
+
+        bindService();
 
         initView();
 
@@ -80,50 +82,16 @@ public class MainActivity extends BaseActivity
         mMusicListFragment.setMusicController(this);
         transaction.replace(R.id.main_ll, mMusicListFragment);
         transaction.commit();
-    }
-
-
-    // ---------------------------------------------------------------------------------
-    // 用于音乐控制的接口
-    // ---------------------------------------------------------------------------------
-
-    @Override
-    public void next() {
-        loadMusic(MusicService.NEXT_INDEX_MARK);
-    }
-
-    @Override
-    public void previous() {
-        loadMusic(MusicService.PREVIOUS_INDEX_MARK);
-    }
-
-
-    @Override
-    public void setMusicList(List<Music> musicList) {
-        mMusicList = musicList;
-        //绑定服务
 
     }
 
-    @Override
-    public void play() {
-        try {
-            mService.play();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void load(int index) {
-        loadMusic(index);
-    }
 
     private void updateInformation() {
         try {
             int index = mService.getCurIndex();
             Music music = mMusicList.get(index);
-            mControlFragment.updateInformation(music.getTitle(), music.getArtist(), mService.isPlaying());
+
+            mControlFragment.updateInformation(music, mService.isPlaying());
             if (mMusicListFragment != null) {
                 mMusicListFragment.updateList(index);
             }
@@ -133,18 +101,6 @@ public class MainActivity extends BaseActivity
     }
 
 
-
-    // ---------------------------------------------------------------------------------
-    // 与service通信相关的接口
-    // ---------------------------------------------------------------------------------
-
-    private void loadMusic(int index) {
-        try {
-            mService.load(index);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
 
 
     // ---------------------------------------------------------------------------------

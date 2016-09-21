@@ -1,6 +1,7 @@
 package com.example.shiheng.mymusicplayer.view;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -9,11 +10,13 @@ import android.util.Log;
 
 import com.example.shiheng.mymusicplayer.IMusicClient;
 import com.example.shiheng.mymusicplayer.IMusicControl;
+import com.example.shiheng.mymusicplayer.IMusicController;
+import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.model.Music;
 
 import java.util.List;
 
-public abstract class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity implements IMusicController {
     protected List<Music> mMusicList;
     protected IMusicControl mService;
 
@@ -65,4 +68,58 @@ public abstract class BaseActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    protected void bindService() {
+        bindService(new Intent(this, MusicService.class), mConnection, BIND_AUTO_CREATE);
+    }
+
+
+    // ---------------------------------------------------------------------------------
+    // 用于音乐控制的接口
+    // ---------------------------------------------------------------------------------
+
+    @Override
+    public void next() {
+        loadMusic(MusicService.NEXT_INDEX_MARK);
+    }
+
+    @Override
+    public void previous() {
+        loadMusic(MusicService.PREVIOUS_INDEX_MARK);
+    }
+
+
+    @Override
+    public void setMusicList(List<Music> musicList) {
+        mMusicList = musicList;
+        //绑定服务
+
+    }
+
+    @Override
+    public void play() {
+        try {
+            mService.play();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ---------------------------------------------------------------------------------
+    // 与service通信相关的接口
+    // ---------------------------------------------------------------------------------
+
+    private void loadMusic(int index) {
+        try {
+            mService.load(index);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void load(int index) {
+        loadMusic(index);
+    }
+
 }

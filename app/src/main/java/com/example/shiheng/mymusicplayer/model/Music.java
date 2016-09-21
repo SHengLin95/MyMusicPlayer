@@ -11,13 +11,18 @@ public class Music implements Parcelable {
     String path;
     int duration;
     int size;
-
+    int albumId;
     protected Music(Parcel in) {
         readFromParcel(in);
     }
 
+
     public Music() {
 
+    }
+
+    public int getAlbumId() {
+        return albumId;
     }
 
     public int getId() {
@@ -74,6 +79,7 @@ public class Music implements Parcelable {
         dest.writeString(path);
         dest.writeInt(duration);
         dest.writeInt(size);
+        dest.writeInt(albumId);
     }
 
     public void readFromParcel(Parcel in) {
@@ -84,5 +90,6 @@ public class Music implements Parcelable {
         path = in.readString();
         duration = in.readInt();
         size = in.readInt();
+        albumId = in.readInt();
     }
 }

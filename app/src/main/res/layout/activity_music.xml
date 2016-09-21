@@ -6,11 +6,12 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:padding="9dp">
+        android:layout_height="?attr/actionBarSize">
 
         <ImageView
+            android:layout_marginLeft="10dp"
             android:id="@+id/music_back_button"
+            android:onClick="onMusicItemClick"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginRight="18dp"
@@ -23,16 +24,17 @@
             android:layout_above="@+id/music_artist"
             android:layout_toRightOf="@+id/music_back_button"
             android:text="title"
-            android:textSize="20sp" />
+            android:textSize="19sp" />
 
         <TextView
             android:id="@+id/music_artist"
+            android:layout_marginBottom="6dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/music_back_button"
             android:layout_toRightOf="@+id/music_back_button"
             android:text="artist"
-            android:textSize="15sp" />
+            android:textSize="12sp" />
     </RelativeLayout>
 
     <ImageView
@@ -40,10 +42,12 @@
         android:layout_height="0dp"
         android:layout_weight="70"
         android:padding="20dp"
+        android:id="@+id/music_album_iv"
         android:src="@drawable/placeholder_disk_play_program" />
 
     <ProgressBar
-
+        android:padding="10dp"
+        style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5" />
@@ -55,35 +59,45 @@
         android:gravity="center">
 
         <ImageView
+            android:id="@+id/music_favorite_iv"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onMusicItemClick"
             android:scaleType="center"
             android:src="@drawable/desk_love" />
 
         <ImageView
+            android:id="@+id/music_previous_iv"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onMusicItemClick"
             android:scaleType="center"
             android:src="@drawable/desk_pre" />
 
         <ImageView
+            android:id="@+id/music_play_iv"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:scaleType="center"
+            android:onClick="onMusicItemClick"
             android:src="@drawable/desk_play" />
 
         <ImageView
+            android:id="@+id/music_next_iv"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onMusicItemClick"
             android:scaleType="center"
             android:src="@drawable/desk_next" />
 
         <ImageView
+            android:id="@+id/music_mode_iv"
             android:layout_width="0dp"
+            android:onClick="onMusicItemClick"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:scaleType="center"

@@ -4,15 +4,6 @@
     android:layout_height="70dp"
     android:padding="4dp">
 
-    <ImageView
-        android:id="@+id/music_control_album"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginStart="10dp"
-        android:src="@drawable/ic_launcher" />
 
     <ImageView
         android:id="@+id/music_control_next"
@@ -48,32 +39,50 @@
         android:tint="@color/error_message_background"
         android:tintMode="src_in" />
 
-
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/music_control_rl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toEndOf="@id/music_control_album"
-        android:layout_toLeftOf="@id/music_control_prev"
-        android:layout_toRightOf="@id/music_control_album"
-        android:layout_toStartOf="@id/music_control_prev"
-        android:orientation="vertical">
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/music_control_prev"
+        android:layout_toStartOf="@+id/music_control_prev">
 
-        <TextView
-            android:id="@+id/music_control_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:lines="1"
-            android:text="title"
-            android:textSize="22sp" />
+        <ImageView
+            android:id="@+id/music_control_album"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/ic_launcher" />
 
-        <TextView
-            android:id="@+id/music_control_singer"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:lines="1"
-            android:text="artist"
-            android:textSize="15sp" />
-    </LinearLayout>
+            android:layout_height="match_parent"
+            android:layout_toEndOf="@id/music_control_album"
+
+            android:layout_toRightOf="@id/music_control_album"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/music_control_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:lines="1"
+                android:text="title"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/music_control_singer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="1"
+                android:text="artist"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </RelativeLayout>
+
 
 </RelativeLayout>

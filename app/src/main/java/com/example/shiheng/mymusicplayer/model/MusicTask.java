@@ -34,6 +34,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA),
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION),
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE),
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
         };
         while (cursor.moveToNext()) {
             Music music = new Music();
@@ -44,6 +45,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
             music.path = cursor.getString(columnIndexes[4]);
             music.duration = cursor.getInt(columnIndexes[5]);
             music.size = cursor.getInt(columnIndexes[6]);
+            music.albumId = cursor.getInt(columnIndexes[7]);
             musicList.add(music);
         }
         cursor.close();
