@@ -16,6 +16,7 @@
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:lines="1"
         android:padding="4dp"
         android:text="artist"
         android:textSize="18sp" />

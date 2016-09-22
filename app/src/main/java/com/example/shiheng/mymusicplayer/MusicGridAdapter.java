@@ -49,7 +49,6 @@ public class MusicGridAdapter extends BaseAdapter {
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-
         GridItem item = mData.get(position);
         if (item.getAlbum() != null) {
             viewHolder.imageView.setImageBitmap(item.getAlbum());

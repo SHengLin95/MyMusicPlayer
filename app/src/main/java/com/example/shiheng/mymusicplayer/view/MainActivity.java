@@ -27,9 +27,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private static final int INIT_FRAGMENT = 2;
 
 
-
     public static final String MUSIC_LIST = "MainActivity.MusicIndex";
-
+    private int mCurrentFragmentIndex = 0;
     private FragmentManager mFragmentManager;
     private MusicControlFragment mControlFragment;
     private MusicListFragment mMusicListFragment;
@@ -86,7 +85,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
 
-
     private void updateInformation() {
         try {
             int index = mService.getCurIndex();
@@ -100,8 +98,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             e.printStackTrace();
         }
     }
-
-
 
 
     // ---------------------------------------------------------------------------------
@@ -126,10 +122,22 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.nav_all_music:
-                loadListFragment();
+                if (mCurrentFragmentIndex != 0) {
+                    loadListFragment();
+                    mCurrentFragmentIndex = 0;
+                }
                 break;
             case R.id.nav_artist:
-                setGridFragment();
+                if (mCurrentFragmentIndex != 1) {
+                    setGridFragment(MusicGridFragment.ARTIST_FLAG);
+                    mCurrentFragmentIndex = 1;
+                }
+                break;
+            case R.id.nav_album:
+                if (mCurrentFragmentIndex != 2) {
+                    setGridFragment(MusicGridFragment.ALBUM_FLAG);
+                    mCurrentFragmentIndex = 2;
+                }
                 break;
         }
         mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -140,12 +148,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         transaction.show(mMusicListFragment);
         transaction.remove(mGridFragment);
+        mGridFragment = null;
         transaction.commit();
     }
 
-    private void setGridFragment() {
+    private void setGridFragment(int flag) {
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        if (mGridFragment != null) {
+            transaction.remove(mGridFragment);
+        }
         mGridFragment = new MusicGridFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(MusicGridFragment.MUSIC_GRID_FRAGMENT_FLAG, flag);
+        mGridFragment.setArguments(bundle);
         transaction.hide(mMusicListFragment);
         transaction.add(R.id.main_ll, mGridFragment);
         transaction.commit();
