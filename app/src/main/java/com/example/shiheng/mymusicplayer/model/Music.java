@@ -12,6 +12,9 @@ public class Music implements Parcelable {
     int duration;
     int size;
     int albumId;
+    int artistId;
+
+
     protected Music(Parcel in) {
         readFromParcel(in);
     }
@@ -21,6 +24,9 @@ public class Music implements Parcelable {
 
     }
 
+    public int getArtistId() {
+        return artistId;
+    }
     public int getAlbumId() {
         return albumId;
     }
@@ -80,6 +86,7 @@ public class Music implements Parcelable {
         dest.writeInt(duration);
         dest.writeInt(size);
         dest.writeInt(albumId);
+        dest.writeInt(artistId);
     }
 
     public void readFromParcel(Parcel in) {
@@ -91,5 +98,6 @@ public class Music implements Parcelable {
         duration = in.readInt();
         size = in.readInt();
         albumId = in.readInt();
+        artistId = in.readInt();
     }
 }

@@ -1,29 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_camera"
-            android:title="Import" />
-        <item
-            android:id="@+id/nav_gallery"
-            android:title="Gallery" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:title="Slideshow" />
-        <item
-            android:id="@+id/nav_manage"
-            android:title="Tools" />
-    </group>
 
-    <item android:title="Communicate">
+    <item android:title="音乐分类">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:title="Share" />
+                android:id="@+id/nav_all_music"
+                android:title="所有歌曲" />
             <item
-                android:id="@+id/nav_send"
-                android:title="Send" />
+                android:id="@+id/nav_artist"
+                android:title="歌手" />
+            <item
+                android:id="@+id/nav_album"
+                android:title="专辑" />
+            <item
+                android:id="@+id/nav_favorite"
+                android:title="收藏" />
+
         </menu>
     </item>
 

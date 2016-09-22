@@ -15,7 +15,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.MainActivity"></activity>
+        <activity
+            android:name=".view.MainActivity"
+            android:launchMode="singleTop"></activity>
         <activity android:name=".view.MusicActivity"></activity>
 
         <service

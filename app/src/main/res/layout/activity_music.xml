@@ -45,9 +45,8 @@
         android:id="@+id/music_album_iv"
         android:src="@drawable/placeholder_disk_play_program" />
 
-    <ProgressBar
+    <SeekBar
         android:padding="10dp"
-        style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5" />

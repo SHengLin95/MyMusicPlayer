@@ -1,16 +1,20 @@
 package com.example.shiheng.mymusicplayer;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.shiheng.mymusicplayer.model.Music;
 import com.example.shiheng.mymusicplayer.model.MusicTask;
+import com.example.shiheng.mymusicplayer.utils.DBHelper;
 import com.example.shiheng.mymusicplayer.view.MainActivity;
 
 import java.io.IOException;
@@ -30,8 +34,21 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private MediaPlayer mMediaPlayer;
     private List<Music> playList;
     private boolean isPlaying = false;
-
     private RemoteCallbackList<IMusicClient> mClients;
+
+    private DBHelper mDbHelper;
+    public static final String DB_NAME = "Music.db";
+    private static final int DB_VERSION = 1;
+
+    @Override
+    public void onCreate() {
+        Log.d(TAG, "onCreate");
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setOnPreparedListener(this);
+        mClients = new RemoteCallbackList<>();
+        mDbHelper = new DBHelper(this, DB_NAME, null, DB_VERSION);
+    }
+
 
     @Nullable
     @Override
@@ -43,13 +60,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
 
-    @Override
-    public void onCreate() {
-        Log.d(TAG, "onCreate");
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setOnPreparedListener(this);
-        mClients = new RemoteCallbackList<>();
-    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -203,5 +214,32 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         playList = musics;
         loadMusic(0);
         notifyDataChange();
+        new DBThread().run();
+    }
+
+    private class DBThread extends Thread {
+
+        @Override
+        public void run() {
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            db.rawQuery("delete from " + DBHelper.TABLE_NAME, null);
+            for (int i = 0; i < playList.size(); i++) {
+                db.insert(DBHelper.TABLE_NAME, null, music2ContentValues(playList.get(i)));
+            }
+        }
+    }
+
+    private ContentValues music2ContentValues(Music music) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Audio.Media._ID, music.getId());
+        contentValues.put(MediaStore.Audio.Media.TITLE, music.getTitle());
+        contentValues.put(MediaStore.Audio.Media.ALBUM, music.getAlbum());
+        contentValues.put(MediaStore.Audio.Media.ARTIST, music.getArtist());
+        contentValues.put(MediaStore.Audio.Media.DATA, music.getPath());
+        contentValues.put(MediaStore.Audio.Media.DURATION, music.getDuration());
+        contentValues.put(MediaStore.Audio.Media.SIZE, music.getSize());
+        contentValues.put(MediaStore.Audio.Media.ALBUM_ID, music.getAlbumId());
+        contentValues.put(MediaStore.Audio.Media.ARTIST_ID, music.getArtistId());
+        return contentValues;
     }
 }

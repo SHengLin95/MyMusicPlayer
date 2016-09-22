@@ -34,21 +34,26 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA),
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION),
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE),
-                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID),
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
         };
         while (cursor.moveToNext()) {
-            Music music = new Music();
-            music.id = cursor.getInt(columnIndexes[0]);
-            music.title = cursor.getString(columnIndexes[1]);
-            music.album = cursor.getString(columnIndexes[2]);
-            music.artist = cursor.getString(columnIndexes[3]);
-            music.path = cursor.getString(columnIndexes[4]);
-            music.duration = cursor.getInt(columnIndexes[5]);
-            music.size = cursor.getInt(columnIndexes[6]);
-            music.albumId = cursor.getInt(columnIndexes[7]);
-            musicList.add(music);
+            if (cursor.getInt(columnIndexes[8]) != 1) {
+                Music music = new Music();
+                music.id = cursor.getInt(columnIndexes[0]);
+                music.title = cursor.getString(columnIndexes[1]);
+                music.album = cursor.getString(columnIndexes[2]);
+                music.artist = cursor.getString(columnIndexes[3]);
+                music.path = cursor.getString(columnIndexes[4]);
+                music.duration = cursor.getInt(columnIndexes[5]);
+                music.size = cursor.getInt(columnIndexes[6]);
+                music.albumId = cursor.getInt(columnIndexes[7]);
+                music.artistId = cursor.getInt(columnIndexes[8]);
+                musicList.add(music);
+            }
         }
         cursor.close();
+
         return musicList;
     }
 
