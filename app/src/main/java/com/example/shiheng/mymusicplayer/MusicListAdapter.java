@@ -12,7 +12,7 @@ import com.example.shiheng.mymusicplayer.model.Music;
 
 import java.util.List;
 
-public class MusicAdapter extends BaseAdapter {
+public class MusicListAdapter extends BaseAdapter {
     private static final int VIEW_TYPE_COUNT = 2;
     private static final int VIEW_TYPE_DEFAULT = 0;
     private static final int VIEW_TYPE_SELECTED = 1;
@@ -20,7 +20,7 @@ public class MusicAdapter extends BaseAdapter {
     private Context context;
     private List<Music> mData;
 
-    public MusicAdapter(Context context, List<Music> musicList) {
+    public MusicListAdapter(Context context, List<Music> musicList) {
         this.context = context;
         mData = musicList;
     }
@@ -78,7 +78,7 @@ public class MusicAdapter extends BaseAdapter {
         TextView artistAndAlbum;
     }
 
-    public MusicAdapter setCurIndex(int curIndex) {
+    public MusicListAdapter setCurIndex(int curIndex) {
         this.curIndex = curIndex;
         return this;
     }

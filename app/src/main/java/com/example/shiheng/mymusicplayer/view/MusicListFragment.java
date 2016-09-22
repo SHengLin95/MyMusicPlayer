@@ -10,7 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.shiheng.mymusicplayer.IMusicController;
-import com.example.shiheng.mymusicplayer.MusicAdapter;
+import com.example.shiheng.mymusicplayer.MusicListAdapter;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
 
@@ -20,7 +20,7 @@ public class MusicListFragment extends Fragment implements AdapterView.OnItemCli
     private IMusicController mController;
     private ListView mListView;
     private List<Music> mMusicList;
-    private MusicAdapter mAdapter;
+    private MusicListAdapter mAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class MusicListFragment extends Fragment implements AdapterView.OnItemCli
         mListView = (ListView) view.findViewById(R.id.fragment_list_lv);
         mListView.setOnItemClickListener(this);
 
-        mAdapter = new MusicAdapter(getContext(), mMusicList);
+        mAdapter = new MusicListAdapter(getContext(), mMusicList);
         mListView.setAdapter(mAdapter);
 //        traversalAllMusic();
         return view;
@@ -61,7 +61,7 @@ public class MusicListFragment extends Fragment implements AdapterView.OnItemCli
 //
 //        mMusicList = musics;
 //        mController.setMusicList(mMusicList);
-//        mAdapter = new MusicAdapter(getContext(), musics);
+//        mAdapter = new MusicListAdapter(getContext(), musics);
 //        mListView.setAdapter(mAdapter);
 //
 //    }

@@ -30,6 +30,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public static final int NEXT_INDEX_MARK = -4;
 
     private int currentIndex = -1;
+    //预加载标志位,一般在首次打开应用时作用
     private boolean isPreLoad = true;
     private MediaPlayer mMediaPlayer;
     private List<Music> playList;
@@ -37,8 +38,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private RemoteCallbackList<IMusicClient> mClients;
 
     private DBHelper mDbHelper;
-    public static final String DB_NAME = "Music.db";
-    private static final int DB_VERSION = 1;
+
 
     @Override
     public void onCreate() {
@@ -46,7 +46,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
         mClients = new RemoteCallbackList<>();
-        mDbHelper = new DBHelper(this, DB_NAME, null, DB_VERSION);
+        mDbHelper = new DBHelper(this, null);
     }
 
 

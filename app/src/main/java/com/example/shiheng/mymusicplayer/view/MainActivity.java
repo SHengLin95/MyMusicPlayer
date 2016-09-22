@@ -1,29 +1,27 @@
 package com.example.shiheng.mymusicplayer.view;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 
-import com.example.shiheng.mymusicplayer.IMusicController;
-import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
-import com.example.shiheng.mymusicplayer.utils.MediaUtil;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "MainActivity";
     private static final int UI_UPDATE = 1;
     private static final int INIT_FRAGMENT = 2;
@@ -35,6 +33,7 @@ public class MainActivity extends BaseActivity {
     private FragmentManager mFragmentManager;
     private MusicControlFragment mControlFragment;
     private MusicListFragment mMusicListFragment;
+    private MusicGridFragment mGridFragment;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
 
@@ -56,7 +55,8 @@ public class MainActivity extends BaseActivity {
         mFragmentManager = getSupportFragmentManager();
         mControlFragment = (MusicControlFragment) mFragmentManager.findFragmentById(R.id.main_music_control);
         mControlFragment.setMusicController(this);
-
+        NavigationView navigationView = (NavigationView) findViewById(R.id.main_navigation_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
 
@@ -84,6 +84,7 @@ public class MainActivity extends BaseActivity {
         transaction.commit();
 
     }
+
 
 
     private void updateInformation() {
@@ -119,6 +120,35 @@ public class MainActivity extends BaseActivity {
         Message msg = Message.obtain();
         msg.what = UI_UPDATE;
         mHandler.sendMessage(msg);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_all_music:
+                loadListFragment();
+                break;
+            case R.id.nav_artist:
+                setGridFragment();
+                break;
+        }
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    private void loadListFragment() {
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        transaction.show(mMusicListFragment);
+        transaction.remove(mGridFragment);
+        transaction.commit();
+    }
+
+    private void setGridFragment() {
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        mGridFragment = new MusicGridFragment();
+        transaction.hide(mMusicListFragment);
+        transaction.add(R.id.main_ll, mGridFragment);
+        transaction.commit();
     }
 
     private class UIHandler extends Handler {

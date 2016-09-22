@@ -4,9 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
-import android.widget.ListView;
-
-import com.example.shiheng.mymusicplayer.MusicAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +12,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
     private Context context;
     private onFinishListener mListener;
 //    private List<Music> musicList;
-//    private MusicAdapter adapter;
+//    private MusicListAdapter adapter;
 
     public MusicTask(Context context) {
         this.context = context;
@@ -63,7 +60,7 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
 
     @Override
     protected void onPostExecute(List<Music> musics) {
-//        adapter = new MusicAdapter(context, musics);
+//        adapter = new MusicListAdapter(context, musics);
 
         if (mListener != null) {
             mListener.onFinish(musics);
