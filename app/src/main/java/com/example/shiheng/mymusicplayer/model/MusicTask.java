@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 
+import com.example.shiheng.mymusicplayer.utils.DBHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,16 +15,31 @@ public class MusicTask extends AsyncTask<Void, Void, List<Music>> {
     private onFinishListener mListener;
 //    private List<Music> musicList;
 //    private MusicListAdapter adapter;
-
+private String selection;
+    private String[] selectionArg;
+    private DBHelper mDbHelper;
     public MusicTask(Context context) {
         this.context = context;
+    }
+
+    public MusicTask(Context context, String selection, String[] selectionArg) {
+        this.context = context;
+        this.selection = selection;
+        this.selectionArg = selectionArg;
+        mDbHelper = new DBHelper(context, null);
     }
 
     @Override
     protected List<Music> doInBackground(Void... params) {
         List<Music> musicList = new ArrayList<>();
-        Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                null, null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+        Cursor cursor;
+        if (mDbHelper == null) {
+            cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    null, null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+        } else {
+            cursor = mDbHelper.getReadableDatabase().query(DBHelper.TABLE_NAME, null,
+                    selection, selectionArg, null, null, null);
+        }
         int[] columnIndexes = new int[]{
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID),
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE),

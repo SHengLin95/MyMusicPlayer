@@ -11,6 +11,7 @@ interface IMusicControl {
      */
 
     List<Music> getMusicList();
+    void updateMusicList(in List<Music> musicList, in int index);
     void play();
     void pause();
     void load(in int index);

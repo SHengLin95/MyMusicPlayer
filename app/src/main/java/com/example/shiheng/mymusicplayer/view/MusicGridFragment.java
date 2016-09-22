@@ -15,9 +15,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.example.shiheng.mymusicplayer.IMusicUpdater;
 import com.example.shiheng.mymusicplayer.MusicGridAdapter;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.GridItem;
+import com.example.shiheng.mymusicplayer.model.Music;
+import com.example.shiheng.mymusicplayer.model.MusicTask;
 import com.example.shiheng.mymusicplayer.utils.DBHelper;
 import com.example.shiheng.mymusicplayer.utils.MediaUtil;
 
@@ -25,14 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MusicGridFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class MusicGridFragment extends Fragment implements AdapterView.OnItemClickListener, MusicTask.onFinishListener {
     private GridView mGridView;
     public static final String MUSIC_GRID_FRAGMENT_FLAG = "MusicGridFlag";
     public static final int ARTIST_FLAG = 0;
     public static final int ALBUM_FLAG = 1;
     private int flag = -1;
     private Context mContext;
-
+    private List<GridItem> mItems;
+    private IMusicUpdater mMusicUpdater;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,13 +49,35 @@ public class MusicGridFragment extends Fragment implements AdapterView.OnItemCli
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_grid, null);
         mGridView = (GridView) view.findViewById(R.id.fragment_grid_gv);
+        mGridView.setOnItemClickListener(this);
         new GridItemTask().execute();
         return view;
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        GridItem item = mItems.get(position);
+        String selection;
+        if (flag == ARTIST_FLAG) {
+            selection = MediaStore.Audio.Media.ARTIST_ID;
+        } else {
+            selection = MediaStore.Audio.Media.ALBUM_ID;
+        }
+        MusicTask musicTask = new MusicTask(mContext, selection + "=?",
+                new String[]{String.valueOf(item.getId())});
+        musicTask.setOnFinishListener(this);
+        musicTask.execute();
+    }
 
+    @Override
+    public void onFinish(List<Music> musics) {
+        if (mMusicUpdater != null) {
+            mMusicUpdater.update(musics);
+        }
+    }
+
+    public void setMusicUpdater(IMusicUpdater updater) {
+        mMusicUpdater = updater;
     }
 
     private class GridItemTask extends AsyncTask<Void, Void, List<GridItem>> {
@@ -91,12 +117,14 @@ public class MusicGridFragment extends Fragment implements AdapterView.OnItemCli
             while (cursor.moveToNext()) {
                 GridItem gridItem = new GridItem();
                 gridItem.setTitle(cursor.getString(0));
+                gridItem.setId(cursor.getInt(1));
                 gridItem.setAlbum(MediaUtil.getAlbumImage(mContext,
-                        cursor.getInt(1), reqWidth, reqHeight));
+                        gridItem.getId(), reqWidth, reqHeight));
                 items.add(gridItem);
             }
 
             cursor.close();
+            mItems = items;
             return items;
         }
 
@@ -110,11 +138,13 @@ public class MusicGridFragment extends Fragment implements AdapterView.OnItemCli
             while (cursor.moveToNext()) {
                 GridItem gridItem = new GridItem();
                 gridItem.setTitle(cursor.getString(0));
-                gridItem.setAlbum(getImageByArtistID(db, cursor.getInt(1)));
+                gridItem.setId(cursor.getInt(1));
+                gridItem.setAlbum(getImageByArtistID(db, gridItem.getId()));
                 items.add(gridItem);
             }
 
             cursor.close();
+            mItems = items;
             return items;
         }
 

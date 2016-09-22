@@ -16,15 +16,19 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.example.shiheng.mymusicplayer.IMusicUpdater;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity
+        implements NavigationView.OnNavigationItemSelectedListener, IMusicUpdater {
     private static final String TAG = "MainActivity";
     private static final int UI_UPDATE = 1;
     private static final int INIT_FRAGMENT = 2;
+    private static final int DATA_UPDATE = 3;
 
 
     public static final String MUSIC_LIST = "MainActivity.MusicIndex";
@@ -35,9 +39,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private MusicGridFragment mGridFragment;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
-
+    private List<Music> allMusicList;
 
     private UIHandler mHandler;
+    private boolean isNeedUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +81,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         mMusicListFragment = new MusicListFragment();
         Bundle bundle = new Bundle();
+        allMusicList = mMusicList;
         bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList) mMusicList);
         mMusicListFragment.setArguments(bundle);
         mMusicListFragment.setMusicController(this);
@@ -123,6 +129,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         switch (item.getItemId()) {
             case R.id.nav_all_music:
                 if (mCurrentFragmentIndex != 0) {
+                    mMusicList = allMusicList;
                     loadListFragment();
                     mCurrentFragmentIndex = 0;
                 }
@@ -144,11 +151,18 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return true;
     }
 
+    // ---------------------------------------------------------------------------------
+    // Fragment相关的操作
+    // ---------------------------------------------------------------------------------
+
     private void loadListFragment() {
+        mMusicListFragment.updateData(mMusicList);
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         transaction.show(mMusicListFragment);
-        transaction.remove(mGridFragment);
-        mGridFragment = null;
+        if (mGridFragment != null) {
+            transaction.remove(mGridFragment);
+            mGridFragment = null;
+        }
         transaction.commit();
     }
 
@@ -158,12 +172,34 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             transaction.remove(mGridFragment);
         }
         mGridFragment = new MusicGridFragment();
+        mGridFragment.setMusicUpdater(this);
         Bundle bundle = new Bundle();
         bundle.putInt(MusicGridFragment.MUSIC_GRID_FRAGMENT_FLAG, flag);
         mGridFragment.setArguments(bundle);
         transaction.hide(mMusicListFragment);
         transaction.add(R.id.main_ll, mGridFragment);
         transaction.commit();
+    }
+
+    @Override
+    public void load(int index) {
+        if (isNeedUpdate) {
+            try {
+                mService.updateMusicList(mMusicList, index);
+                isNeedUpdate = false;
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        } else {
+            super.load(index);
+        }
+    }
+
+    @Override
+    public void update(List<Music> musicList) {
+        mMusicList = musicList;
+        isNeedUpdate = true;
+        mHandler.sendEmptyMessage(DATA_UPDATE);
     }
 
     private class UIHandler extends Handler {
@@ -176,7 +212,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 case UI_UPDATE:
                     updateInformation();
                     break;
-
+                case DATA_UPDATE:
+                    loadListFragment();
+                    break;
             }
         }
     }

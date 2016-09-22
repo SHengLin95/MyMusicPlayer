@@ -78,8 +78,14 @@ public class MusicListAdapter extends BaseAdapter {
         TextView artistAndAlbum;
     }
 
-    public MusicListAdapter setCurIndex(int curIndex) {
+    public void setCurIndex(int curIndex) {
         this.curIndex = curIndex;
-        return this;
+        notifyDataSetChanged();
+    }
+
+    public void setData(List<Music> data) {
+        curIndex = -1;
+        mData = data;
+        notifyDataSetChanged();
     }
 }

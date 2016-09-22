@@ -15,4 +15,5 @@ public interface IMusicController {
     void setMusicList(List<Music> musicList);
 
     void load(int index);
+
 }

@@ -73,9 +73,14 @@ public class MusicListFragment extends Fragment implements AdapterView.OnItemCli
 
     public void updateList(int index) {
         if (mAdapter != null) {
-            mAdapter.setCurIndex(index).notifyDataSetChanged();
+            mAdapter.setCurIndex(index);
         }
     }
 
+    public void updateData(List<Music> data) {
+        if (mAdapter != null) {
+            mAdapter.setData(data);
+        }
+    }
 
 }
