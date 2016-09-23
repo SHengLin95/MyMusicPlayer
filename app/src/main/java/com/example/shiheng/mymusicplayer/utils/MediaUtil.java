@@ -66,6 +66,18 @@ public class MediaUtil {
         return inSampleSize;
     }
 
+    public static String formatTime(long duration) {
+        duration /= 1000;
+        String min = String.valueOf(duration / 60);
+        if (min.length() < 2) {
+            min = "0" + min;
+        }
+        String sec = String.valueOf(duration % 60);
+        if (sec.length() < 2) {
+            sec = "0" + sec;
+        }
+        return min + ":" + sec;
+    }
 //    public static Bitmap decodeSampledBitmapFromResource(InputStream is,
 //                                                         int reqWidth, int reqHeight) {
 //        BitmapFactory.Options options = new BitmapFactory.Options();

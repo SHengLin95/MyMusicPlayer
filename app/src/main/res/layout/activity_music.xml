@@ -41,15 +41,39 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="70"
-        android:padding="20dp"
+        android:padding="40dp"
         android:id="@+id/music_album_iv"
         android:src="@drawable/placeholder_disk_play_program" />
 
-    <SeekBar
-        android:padding="10dp"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="5" />
+        android:layout_weight="5">
+
+        <TextView
+            android:gravity="center|end"
+            android:text="00:00"
+            android:layout_weight="2"
+            android:id="@+id/music_time_cur"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+        <SeekBar
+            android:id="@+id/music_seek_bar"
+            android:layout_weight="12"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="10dp" />
+
+        <TextView
+            android:gravity="start|center"
+            android:id="@+id/music_time_count"
+            android:text="04:02"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

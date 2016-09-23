@@ -59,7 +59,7 @@ private String selection;
                 music.album = cursor.getString(columnIndexes[2]);
                 music.artist = cursor.getString(columnIndexes[3]);
                 music.path = cursor.getString(columnIndexes[4]);
-                music.duration = cursor.getInt(columnIndexes[5]);
+                music.duration = cursor.getLong(columnIndexes[5]);
                 music.size = cursor.getInt(columnIndexes[6]);
                 music.albumId = cursor.getInt(columnIndexes[7]);
                 music.artistId = cursor.getInt(columnIndexes[8]);

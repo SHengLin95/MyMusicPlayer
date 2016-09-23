@@ -9,7 +9,7 @@ public class Music implements Parcelable {
     String album;
     String artist;
     String path;
-    int duration;
+    long duration;
     int size;
     int albumId;
     int artistId;
@@ -51,7 +51,7 @@ public class Music implements Parcelable {
         return path;
     }
 
-    public int getDuration() {
+    public long getDuration() {
         return duration;
     }
 
@@ -83,7 +83,7 @@ public class Music implements Parcelable {
         dest.writeString(album);
         dest.writeString(artist);
         dest.writeString(path);
-        dest.writeInt(duration);
+        dest.writeLong(duration);
         dest.writeInt(size);
         dest.writeInt(albumId);
         dest.writeInt(artistId);
@@ -95,7 +95,7 @@ public class Music implements Parcelable {
         album = in.readString();
         artist = in.readString();
         path = in.readString();
-        duration = in.readInt();
+        duration = in.readLong();
         size = in.readInt();
         albumId = in.readInt();
         artistId = in.readInt();

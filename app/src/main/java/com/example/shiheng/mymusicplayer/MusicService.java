@@ -167,6 +167,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         @Override
+        public int getCurMediaPosition() throws RemoteException {
+            return mMediaPlayer.getCurrentPosition();
+        }
+
+        @Override
+        public void setCurMediaPosition(int position) throws RemoteException {
+            mMediaPlayer.seekTo(position);
+        }
+
+        @Override
         public void updateMusicList(List<Music> musicList, int index) throws RemoteException {
             playList = musicList;
             currentIndex = -1;
