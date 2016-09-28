@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.shiheng.mymusicplayer.MusicService;
 import com.example.shiheng.mymusicplayer.R;
 import com.example.shiheng.mymusicplayer.model.Music;
 import com.example.shiheng.mymusicplayer.utils.MediaUtil;
@@ -28,10 +29,12 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
 
     private ImageView mPlayImageView;
     private ImageView mAlbumImageView;
+    private ImageView mModeImageView;
     private static final int UI_UPDATE = 0;
     private static final int TIME_UPDATE = 1;
     private boolean isPlaying = false;
     private boolean isSeeking = false;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +47,7 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
         mArtistTextView = (TextView) findViewById(R.id.music_artist);
         mPlayImageView = (ImageView) findViewById(R.id.music_play_iv);
         mAlbumImageView = (ImageView) findViewById(R.id.music_album_iv);
+        mModeImageView = (ImageView) findViewById(R.id.music_mode_iv);
         mCurTimeTextView = (TextView) findViewById(R.id.music_time_cur);
         mCountTimeTextView = (TextView) findViewById(R.id.music_time_count);
         mSeekBar = (SeekBar) findViewById(R.id.music_seek_bar);
@@ -78,9 +82,23 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
                 next();
                 break;
             case R.id.music_mode_iv:
+                changeMode();
                 break;
         }
     }
+
+    private void changeMode() {
+        try {
+            int mode = mService.getMusicMode();
+            mode = (mode + 1) % MusicService.MUSIC_MODE.length;
+            mService.setMusicMode(mode);
+            updateModeImage(mode);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -96,7 +114,7 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
     public void onStopTrackingTouch(SeekBar seekBar) {
         try {
             mService.setCurMediaPosition(seekBar.getProgress());
-            new Timer().run();
+            new Timer().start();
             isSeeking = false;
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -127,7 +145,7 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
             e.printStackTrace();
         }
 
-        new Timer().run();
+        new Timer().start();
     }
 
     private void updateInformation() {
@@ -142,7 +160,7 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
             mCountTimeTextView.setText(MediaUtil.formatTime(duration));
             mSeekBar.setMax((int) duration);
 
-
+            updateModeImage(mService.getMusicMode());
             Bitmap album = MediaUtil.getAlbumImage(this, music.getAlbumId(),
                     mAlbumImageView.getWidth(), mAlbumImageView.getHeight());
             if (album != null) {
@@ -154,6 +172,22 @@ public class MusicActivity extends BaseActivity implements SeekBar.OnSeekBarChan
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateModeImage(int mode) {
+        int resource = 0;
+        switch (mode) {
+            case MusicService.RANDOM:
+                resource = R.drawable.desk_shuffle;
+                break;
+            case MusicService.SINGLE_CYCLE:
+                resource = R.drawable.desk_one;
+                break;
+            case MusicService.ORDER_PLAY:
+                resource = R.drawable.desk_order;
+                break;
+        }
+        mModeImageView.setImageResource(resource);
     }
 
     private void togglePlayImage() {

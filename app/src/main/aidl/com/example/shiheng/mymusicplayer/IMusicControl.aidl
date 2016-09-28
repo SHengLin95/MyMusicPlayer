@@ -21,4 +21,6 @@ interface IMusicControl {
     void registerClient(IMusicClient client);
     void unregisterClient(IMusicClient client);
     boolean isPlaying();
+    int getMusicMode();
+    void setMusicMode(in int mode);
 }

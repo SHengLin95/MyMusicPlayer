@@ -22,8 +22,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
+import java.util.Random;
 
-public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MusicTask.onFinishListener {
+public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MusicTask.onFinishListener, MediaPlayer.OnCompletionListener {
     private static final String TAG = "MusicService";
 
     public static final int PREVIOUS_INDEX_MARK = -3;
@@ -39,14 +40,25 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     private DBHelper mDbHelper;
 
+    private Random mRandom;
+    public int mMusicMode = ORDER_PLAY;
+    public static final int ORDER_PLAY = 0;
+    public static final int RANDOM = 1;
+    public static final int SINGLE_CYCLE = 2;
+    public static final int[] MUSIC_MODE = {
+            ORDER_PLAY, RANDOM, SINGLE_CYCLE
+    };
+
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnCompletionListener(this);
         mClients = new RemoteCallbackList<>();
         mDbHelper = new DBHelper(this, null);
+        mRandom = new Random();
     }
 
 
@@ -58,8 +70,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         musicTask.execute();
         return mBinder;
     }
-
-
 
 
     @Override
@@ -86,6 +96,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         notifyDataChange();
     }
 
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        if (mMusicMode == SINGLE_CYCLE) {
+            mp.stop();
+            mp.prepareAsync();
+        } else {
+            loadMusic(NEXT_INDEX_MARK);
+        }
+    }
+
     public void loadMusic(int index) {
         if (index == -1) {
             return;
@@ -96,15 +116,21 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         switch (index) {
             case PREVIOUS_INDEX_MARK:
-                index = currentIndex;
-                if (--index < 0) {
-                    index = playList.size() - 1;
+                if (mMusicMode != RANDOM) {
+                    index = currentIndex;
+                    if (--index < 0) {
+                        index = playList.size() - 1;
+                    }
+                    break;
                 }
-                break;
             case NEXT_INDEX_MARK:
-                index = currentIndex;
-                if (++index == playList.size()) {
-                    index = 0;
+                if (mMusicMode != RANDOM) {
+                    index = currentIndex;
+                    if (++index == playList.size()) {
+                        index = 0;
+                    }
+                } else {
+                    index = mRandom.nextInt(playList.size());
                 }
                 break;
         }
@@ -213,6 +239,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         @Override
+        public int getMusicMode() throws RemoteException {
+            return mMusicMode;
+        }
+
+        @Override
+        public void setMusicMode(int mode) throws RemoteException {
+            if (mode < 3) {
+                mMusicMode = mode;
+            }
+        }
+
+        @Override
         public void registerClient(IMusicClient client) throws RemoteException {
             mClients.register(client);
 //            Log.d(TAG, "registerClient: " + mClients.indexOf(client));
@@ -244,19 +282,21 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 db.insert(DBHelper.TABLE_NAME, null, music2ContentValues(playList.get(i)));
             }
         }
+
+        private ContentValues music2ContentValues(Music music) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Audio.Media._ID, music.getId());
+            contentValues.put(MediaStore.Audio.Media.TITLE, music.getTitle());
+            contentValues.put(MediaStore.Audio.Media.ALBUM, music.getAlbum());
+            contentValues.put(MediaStore.Audio.Media.ARTIST, music.getArtist());
+            contentValues.put(MediaStore.Audio.Media.DATA, music.getPath());
+            contentValues.put(MediaStore.Audio.Media.DURATION, music.getDuration());
+            contentValues.put(MediaStore.Audio.Media.SIZE, music.getSize());
+            contentValues.put(MediaStore.Audio.Media.ALBUM_ID, music.getAlbumId());
+            contentValues.put(MediaStore.Audio.Media.ARTIST_ID, music.getArtistId());
+            return contentValues;
+        }
     }
 
-    private ContentValues music2ContentValues(Music music) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(MediaStore.Audio.Media._ID, music.getId());
-        contentValues.put(MediaStore.Audio.Media.TITLE, music.getTitle());
-        contentValues.put(MediaStore.Audio.Media.ALBUM, music.getAlbum());
-        contentValues.put(MediaStore.Audio.Media.ARTIST, music.getArtist());
-        contentValues.put(MediaStore.Audio.Media.DATA, music.getPath());
-        contentValues.put(MediaStore.Audio.Media.DURATION, music.getDuration());
-        contentValues.put(MediaStore.Audio.Media.SIZE, music.getSize());
-        contentValues.put(MediaStore.Audio.Media.ALBUM_ID, music.getAlbumId());
-        contentValues.put(MediaStore.Audio.Media.ARTIST_ID, music.getArtistId());
-        return contentValues;
-    }
+
 }
