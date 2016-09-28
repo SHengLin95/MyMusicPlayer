@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="128dp">
+
+    <ImageView
+        android:layout_marginRight="10dp"
+        android:layout_marginEndt="10dp"
+        android:src="@drawable/placeholder_disk_play_song"
+        android:id="@+id/notification_iv_album"
+        android:layout_width="128dp"
+        android:layout_height="128dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:padding="10dp"
+            android:layout_weight="5"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+            <ImageView
+                android:src="@drawable/note_btn_close_white"
+                android:id="@+id/notification_iv_cancel"
+                android:layout_alignParentRight="true"
+                android:layout_width="20dp"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/notification_tv_title"
+                android:layout_toLeftOf="@id/notification_iv_cancel"
+                android:text="hello"
+                android:textSize="25sp"
+                android:layout_width="match_parent"
+                android:lines="1"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_below="@id/notification_tv_title"
+                android:id="@+id/notification_tv_artist"
+                android:text="hello"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:lines="1"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:gravity="center"
+            android:layout_weight="3"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+            <ImageView
+                android:padding="5dp"
+                android:id="@+id/notification_iv_prev"
+                android:src="@drawable/note_btn_pre_white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:id="@+id/notification_iv_play"
+                android:src="@drawable/note_btn_play_white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:padding="5dp"
+                android:id="@+id/notification_iv_next"
+                android:src="@drawable/note_btn_next_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
