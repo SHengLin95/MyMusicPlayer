@@ -14,6 +14,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 
 import com.example.shiheng.mymusicplayer.IMusicUpdater;
@@ -87,7 +88,6 @@ public class MainActivity extends BaseActivity
         mMusicListFragment.setMusicController(this);
         transaction.replace(R.id.main_ll, mMusicListFragment);
         transaction.commit();
-
     }
 
 
@@ -162,9 +162,9 @@ public class MainActivity extends BaseActivity
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         transaction.show(mMusicListFragment);
         if (mGridFragment != null) {
-            transaction.remove(mGridFragment);
-            mGridFragment = null;
+            transaction.hide(mGridFragment);
         }
+        transaction.addToBackStack(null);
         transaction.commit();
     }
 
@@ -221,5 +221,12 @@ public class MainActivity extends BaseActivity
         }
     }
 
-
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            mDrawerLayout.closeDrawers();
+        } else {
+            super.onBackPressed();
+        }
+    }
 }

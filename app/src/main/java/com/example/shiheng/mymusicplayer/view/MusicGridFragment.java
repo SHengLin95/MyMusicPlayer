@@ -82,8 +82,8 @@ public class MusicGridFragment extends Fragment implements AdapterView.OnItemCli
 
     private class GridItemTask extends AsyncTask<Void, Void, List<GridItem>> {
         private DBHelper dbHelper;
-        private static final int reqWidth = 150;
-        private static final int reqHeight = 150;
+        private static final int reqWidth = 100;
+        private static final int reqHeight = 100;
 
         public GridItemTask() {
             dbHelper = new DBHelper(mContext, null);
