@@ -94,11 +94,13 @@ public class MainActivity extends BaseActivity
     private void updateInformation() {
         try {
             int index = mService.getCurIndex();
-            Music music = mMusicList.get(index);
+            if (index != -1) {
+                Music music = mMusicList.get(index);
 
-            mControlFragment.updateInformation(music, mService.isPlaying());
-            if (mMusicListFragment != null) {
-                mMusicListFragment.updateList(index);
+                mControlFragment.updateInformation(music, mService.isPlaying());
+                if (mMusicListFragment != null) {
+                    mMusicListFragment.updateList(index);
+                }
             }
         } catch (RemoteException e) {
             e.printStackTrace();
