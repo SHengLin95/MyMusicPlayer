@@ -86,7 +86,7 @@ public class MainActivity extends BaseActivity
         bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList) mMusicList);
         mMusicListFragment.setArguments(bundle);
         mMusicListFragment.setMusicController(this);
-        transaction.replace(R.id.main_ll, mMusicListFragment);
+        transaction.replace(R.id.main_fl, mMusicListFragment);
         transaction.commit();
     }
 
@@ -179,7 +179,7 @@ public class MainActivity extends BaseActivity
         bundle.putInt(MusicGridFragment.MUSIC_GRID_FRAGMENT_FLAG, flag);
         mGridFragment.setArguments(bundle);
         transaction.hide(mMusicListFragment);
-        transaction.add(R.id.main_ll, mGridFragment);
+        transaction.add(R.id.main_fl, mGridFragment);
         transaction.commit();
     }
 
@@ -192,9 +192,9 @@ public class MainActivity extends BaseActivity
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-        } else {
-            super.load(index);
         }
+        super.load(index);
+
     }
 
     @Override

@@ -15,9 +15,9 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <LinearLayout
+    <FrameLayout
         android:orientation="vertical"
-        android:id="@+id/main_ll"
+        android:id="@+id/main_fl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/main_music_control"

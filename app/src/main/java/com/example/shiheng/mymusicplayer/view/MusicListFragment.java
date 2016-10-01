@@ -42,29 +42,9 @@ public class MusicListFragment extends Fragment implements AdapterView.OnItemCli
 
         mAdapter = new MusicListAdapter(getContext(), mMusicList);
         mListView.setAdapter(mAdapter);
-//        traversalAllMusic();
         return view;
     }
 
-//    private void traversalAllMusic() {
-//        MusicTask musicTask = new MusicTask(getContext());
-//        musicTask.setOnFinishListener(this);
-//        musicTask.execute();
-//    }
-//
-//    /**
-//     * MusicTask回调接口
-//     * @param musics
-//     */
-//    @Override
-//    public void onFinish(List<Music> musics) {
-//
-//        mMusicList = musics;
-//        mController.setMusicList(mMusicList);
-//        mAdapter = new MusicListAdapter(getContext(), musics);
-//        mListView.setAdapter(mAdapter);
-//
-//    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

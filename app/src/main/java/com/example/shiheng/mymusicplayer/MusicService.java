@@ -331,7 +331,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         public void updateMusicList(List<Music> musicList, int index) throws RemoteException {
             playList = musicList;
             currentIndex = -1;
-            load(index);
         }
 
         @Override
