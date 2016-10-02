@@ -76,18 +76,34 @@ public class LogoActivity extends BaseActivity {
     }
 
     private void startService() {
-//        startService(new Intent(this, MusicService.class));
+        startService(new Intent(this, MusicService.class));
         bindService();
     }
 
 
     @Override
     protected void onServiceConnected() {
-
+        try {
+            if (mService.isRunning()) {
+                Log.d("logoActivity", "onServiceConnected: ");
+                startMainActivity();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void onDataChanged() {
+        startMainActivity();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void startMainActivity() {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -100,10 +116,5 @@ public class LogoActivity extends BaseActivity {
                 }
             }
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 }

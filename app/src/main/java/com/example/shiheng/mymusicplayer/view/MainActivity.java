@@ -33,7 +33,9 @@ public class MainActivity extends BaseActivity
     private static final int DATA_UPDATE = 3;
 
 
-    public static final String MUSIC_LIST = "MainActivity.MusicIndex";
+    public static final String MUSIC_LIST = "MainActivity.MusicList";
+    public static final String MUSIC_INDEX = "MainActivity.MusicIndex";
+
     private FragmentManager mFragmentManager;
     private MusicControlFragment mControlFragment;
     private MusicListFragment mMusicListFragment;
@@ -41,7 +43,6 @@ public class MainActivity extends BaseActivity
     private Stack<Integer> mFragmentStack;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
-    private List<Music> allMusicList;
 
     private UIHandler mHandler;
 
@@ -83,8 +84,12 @@ public class MainActivity extends BaseActivity
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         mMusicListFragment = new MusicListFragment();
         Bundle bundle = new Bundle();
-        allMusicList = mMusicList;
         bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList<Music>) mMusicList);
+        try {
+            bundle.putInt(MUSIC_INDEX, mService.getCurIndex());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         mMusicListFragment.setArguments(bundle);
         mMusicListFragment.setMusicController(this);
         transaction.replace(R.id.main_fl, mMusicListFragment);
@@ -136,10 +141,17 @@ public class MainActivity extends BaseActivity
                 if (currentFragmentIndex != 0) {
                     showList();
                 } else {
-                    if (mMusicList.size() != allMusicList.size()) {
-                        mMusicList = allMusicList;
-                        showList();
+                    List<Music> allMusicList = null;
+                    try {
+                        allMusicList = mService.getAllMusic();
+                        if (mMusicList.size() != allMusicList.size()) {
+                            mMusicList = allMusicList;
+                            showList();
+                        }
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
                     }
+
                 }
                 break;
             case R.id.nav_artist:

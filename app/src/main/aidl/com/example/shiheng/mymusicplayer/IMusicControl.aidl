@@ -11,6 +11,7 @@ interface IMusicControl {
      */
 
     List<Music> getMusicList();
+    List<Music> getAllMusic();
     int getCurMediaPosition();
     void setCurMediaPosition(in int position);
     void updateMusicList(in List<Music> musicList);
@@ -21,6 +22,7 @@ interface IMusicControl {
     void registerClient(IMusicClient client);
     void unregisterClient(IMusicClient client);
     boolean isPlaying();
+    boolean isRunning();
     int getMusicMode();
     void setMusicMode(in int mode);
 }

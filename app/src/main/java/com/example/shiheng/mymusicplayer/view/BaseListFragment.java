@@ -22,11 +22,13 @@ public class BaseListFragment extends Fragment implements AdapterView.OnItemClic
     protected List<Music> mMusicList;
     protected MusicListAdapter mAdapter;
     protected IMusicController mController;
-
+    protected int curIndex;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mMusicList = getArguments().getParcelableArrayList(MainActivity.MUSIC_LIST);
+        Bundle bundle = getArguments();
+        mMusicList = bundle.getParcelableArrayList(MainActivity.MUSIC_LIST);
+        curIndex = bundle.getInt(MainActivity.MUSIC_INDEX, -1);
     }
 
 
@@ -43,6 +45,7 @@ public class BaseListFragment extends Fragment implements AdapterView.OnItemClic
         mListView.setOnItemClickListener(this);
 
         mAdapter = new MusicListAdapter(getContext(), mMusicList);
+        mAdapter.setCurIndex(curIndex);
         mListView.setAdapter(mAdapter);
         return view;
     }

@@ -23,7 +23,6 @@ public abstract class BaseActivity extends AppCompatActivity implements IMusicCo
     protected ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d("ServiceConnect", "onServiceConnected");
             mService = IMusicControl.Stub.asInterface(service);
             try {
                 mService.registerClient(mClient);

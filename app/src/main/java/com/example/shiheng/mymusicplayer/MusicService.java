@@ -19,12 +19,15 @@ import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.widget.RemoteViews;
 
 import com.example.shiheng.mymusicplayer.model.Music;
 import com.example.shiheng.mymusicplayer.model.MusicTask;
 import com.example.shiheng.mymusicplayer.utils.DBHelper;
 import com.example.shiheng.mymusicplayer.utils.MediaUtil;
+import com.example.shiheng.mymusicplayer.view.MainActivity;
+import com.example.shiheng.mymusicplayer.view.MusicActivity;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,6 +44,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private boolean isPreLoad = true;
     private MediaPlayer mMediaPlayer;
     private List<Music> playList;
+    private List<Music> allMusic;
     private boolean isPlaying = false;
     private RemoteCallbackList<IMusicClient> mClients;
 
@@ -65,6 +69,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private static final int NOTIFY_ID = 123;
 
     private BroadcastReceiver mReceiver;
+    private boolean isStop = false;
+    private boolean isRunning = false;
     @Override
     public void onCreate() {
         mMediaPlayer = new MediaPlayer();
@@ -131,11 +137,19 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mBigRemoteViews.setOnClickPendingIntent(R.id.notification_big_iv_next, nextIntent);
         mSmallRemoteViews.setOnClickPendingIntent(R.id.notification_iv_next, nextIntent);
 
+        //初始化notification点击事件
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MusicActivity.class);
+        stackBuilder.addNextIntent(new Intent(this, MainActivity.class));
+        stackBuilder.addNextIntent(new Intent(this, MusicActivity.class));
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
         mBuilder = new NotificationCompat.Builder(this);
         mBuilder.setSmallIcon(R.drawable.ic_launcher)
                 .setContent(mSmallRemoteViews)
                 .setCustomBigContentView(mBigRemoteViews)
-                .setPriority(Notification.PRIORITY_HIGH);
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent);
 
         mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 //        Notification notification = mBuilder.build();
@@ -166,11 +180,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mSmallRemoteViews.setTextViewText(R.id.notification_tv_title, music.getTitle());
         mSmallRemoteViews.setTextViewText(R.id.notification_tv_artist,
                 music.getArtist() + " - " + music.getArtist());
-        Bitmap bitmap1 = MediaUtil.getAlbumImage(this, music.getAlbumId(), 64, 64);
-        if (bitmap1 != null) {
-            mSmallRemoteViews.setImageViewBitmap(R.id.notification_big_iv_album, bitmap1);
+//        Bitmap bitmap1 = MediaUtil.getAlbumImage(this, music.getAlbumId(), 64, 64);
+        if (bitmap != null) {
+            mSmallRemoteViews.setImageViewBitmap(R.id.notification_iv_album, bitmap);
         } else {
-            mSmallRemoteViews.setImageViewResource(R.id.notification_big_iv_album, R.drawable.placeholder_disk_play_song);
+            mSmallRemoteViews.setImageViewResource(R.id.notification_iv_album, R.drawable.placeholder_disk_play_song);
         }
         if (isPlaying) {
             mSmallRemoteViews.setImageViewResource(R.id.notification_iv_play, R.drawable.note_btn_pause_white);
@@ -268,6 +282,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void play() {
+        if (isStop) {
+            loadMusic(currentIndex);
+            isStop = false;
+            return;
+        }
         if (isPlaying) {
             pause();
             isPlaying = false;
@@ -289,6 +308,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void stop() {
         mMediaPlayer.stop();
         isPlaying = false;
+        isStop = true;
         notifyDataChange();
     }
 
@@ -296,7 +316,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 //        if (mClients.size() == 0) {
 //            return;
 //        }
-        updateNotification();
+        if (!isStop) {
+            updateNotification();
+        }
         int len = mClients.beginBroadcast();
         try {
             for (int i = 0; i < len; i++) {
@@ -315,6 +337,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         @Override
         public List<Music> getMusicList() throws RemoteException {
             return playList;
+        }
+
+        @Override
+        public List<Music> getAllMusic() throws RemoteException {
+            return allMusic;
         }
 
         @Override
@@ -363,6 +390,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         @Override
+        public boolean isRunning() throws RemoteException {
+            return isRunning;
+        }
+
+        @Override
         public int getMusicMode() throws RemoteException {
             return mMusicMode;
         }
@@ -391,8 +423,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onFinish(List<Music> musics) {
         playList = musics;
+        allMusic = musics;
         loadMusic(0);
         notifyDataChange();
+        isRunning = true;
         new DBThread().run();
     }
 
