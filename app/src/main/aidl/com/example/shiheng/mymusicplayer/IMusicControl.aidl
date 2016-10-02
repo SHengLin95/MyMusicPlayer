@@ -13,7 +13,7 @@ interface IMusicControl {
     List<Music> getMusicList();
     int getCurMediaPosition();
     void setCurMediaPosition(in int position);
-    void updateMusicList(in List<Music> musicList, in int index);
+    void updateMusicList(in List<Music> musicList);
     void play();
     void pause();
     void load(in int index);

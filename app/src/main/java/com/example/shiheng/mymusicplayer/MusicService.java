@@ -328,7 +328,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         @Override
-        public void updateMusicList(List<Music> musicList, int index) throws RemoteException {
+        public void updateMusicList(List<Music> musicList) throws RemoteException {
             playList = musicList;
             currentIndex = -1;
         }

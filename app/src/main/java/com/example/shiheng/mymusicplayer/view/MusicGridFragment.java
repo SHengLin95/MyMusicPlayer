@@ -31,8 +31,8 @@ import java.util.List;
 public class MusicGridFragment extends Fragment implements AdapterView.OnItemClickListener, MusicTask.onFinishListener {
     private GridView mGridView;
     public static final String MUSIC_GRID_FRAGMENT_FLAG = "MusicGridFlag";
-    public static final int ARTIST_FLAG = 0;
-    public static final int ALBUM_FLAG = 1;
+    public static final int ARTIST_FLAG = 1;
+    public static final int ALBUM_FLAG = 2;
     private int flag = -1;
     private Context mContext;
     private List<GridItem> mItems;

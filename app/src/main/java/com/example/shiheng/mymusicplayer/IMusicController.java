@@ -12,7 +12,7 @@ public interface IMusicController {
     void play();
 
 
-    void setMusicList(List<Music> musicList);
+    void updateMusicList(List<Music> musicList);
 
     void load(int index);
 

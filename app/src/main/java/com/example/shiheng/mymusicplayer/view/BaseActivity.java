@@ -90,9 +90,13 @@ public abstract class BaseActivity extends AppCompatActivity implements IMusicCo
 
 
     @Override
-    public void setMusicList(List<Music> musicList) {
+    public void updateMusicList(List<Music> musicList) {
         mMusicList = musicList;
-        //绑定服务
+        try {
+            mService.updateMusicList(musicList);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
 
     }
 

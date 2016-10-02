@@ -16,7 +16,7 @@ public class MusicListAdapter extends BaseAdapter {
     private static final int VIEW_TYPE_COUNT = 2;
     private static final int VIEW_TYPE_DEFAULT = 0;
     private static final int VIEW_TYPE_SELECTED = 1;
-    private int curIndex = 0;
+    private int curIndex = -1;
     private Context context;
     private List<Music> mData;
 

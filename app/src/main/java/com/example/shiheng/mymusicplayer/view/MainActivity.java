@@ -23,6 +23,7 @@ import com.example.shiheng.mymusicplayer.model.Music;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, IMusicUpdater {
@@ -33,17 +34,16 @@ public class MainActivity extends BaseActivity
 
 
     public static final String MUSIC_LIST = "MainActivity.MusicIndex";
-    private int mCurrentFragmentIndex = 0;
     private FragmentManager mFragmentManager;
     private MusicControlFragment mControlFragment;
     private MusicListFragment mMusicListFragment;
     private MusicGridFragment mGridFragment;
+    private Stack<Integer> mFragmentStack;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
     private List<Music> allMusicList;
 
     private UIHandler mHandler;
-    private boolean isNeedUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,7 @@ public class MainActivity extends BaseActivity
 
         initView();
 
+        mFragmentStack = new Stack<>();
         mFragmentManager = getSupportFragmentManager();
         mControlFragment = (MusicControlFragment) mFragmentManager.findFragmentById(R.id.main_music_control);
         mControlFragment.setMusicController(this);
@@ -83,11 +84,12 @@ public class MainActivity extends BaseActivity
         mMusicListFragment = new MusicListFragment();
         Bundle bundle = new Bundle();
         allMusicList = mMusicList;
-        bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList) mMusicList);
+        bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList<Music>) mMusicList);
         mMusicListFragment.setArguments(bundle);
         mMusicListFragment.setMusicController(this);
         transaction.replace(R.id.main_fl, mMusicListFragment);
         transaction.commit();
+        mFragmentStack.push(0);
     }
 
 
@@ -128,24 +130,26 @@ public class MainActivity extends BaseActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int currentFragmentIndex = mFragmentStack.peek();
         switch (item.getItemId()) {
             case R.id.nav_all_music:
-                if (mCurrentFragmentIndex != 0) {
-                    mMusicList = allMusicList;
-                    loadListFragment();
-                    mCurrentFragmentIndex = 0;
+                if (currentFragmentIndex != 0) {
+                    showList();
+                } else {
+                    if (mMusicList.size() != allMusicList.size()) {
+                        mMusicList = allMusicList;
+                        showList();
+                    }
                 }
                 break;
             case R.id.nav_artist:
-                if (mCurrentFragmentIndex != 1) {
+                if (currentFragmentIndex != 1) {
                     setGridFragment(MusicGridFragment.ARTIST_FLAG);
-                    mCurrentFragmentIndex = 1;
                 }
                 break;
             case R.id.nav_album:
-                if (mCurrentFragmentIndex != 2) {
+                if (currentFragmentIndex != 2) {
                     setGridFragment(MusicGridFragment.ALBUM_FLAG);
-                    mCurrentFragmentIndex = 2;
                 }
                 break;
         }
@@ -157,13 +161,16 @@ public class MainActivity extends BaseActivity
     // Fragment相关的操作
     // ---------------------------------------------------------------------------------
 
-    private void loadListFragment() {
-        mMusicListFragment.updateData(mMusicList);
+    private void showList() {
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
-        transaction.show(mMusicListFragment);
-        if (mGridFragment != null) {
-            transaction.hide(mGridFragment);
-        }
+        MusicShowListFragment fragment = new MusicShowListFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList(MUSIC_LIST, (ArrayList<Music>) mMusicList);
+        fragment.setArguments(bundle);
+        fragment.setMusicController(this);
+        transaction.replace(R.id.main_fl, fragment);
+
+        mFragmentStack.push(3);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -173,35 +180,45 @@ public class MainActivity extends BaseActivity
         if (mGridFragment != null) {
             transaction.remove(mGridFragment);
         }
+        if (mFragmentManager.getBackStackEntryCount() > 0) {
+            popFragment();
+        }
         mGridFragment = new MusicGridFragment();
         mGridFragment.setMusicUpdater(this);
         Bundle bundle = new Bundle();
         bundle.putInt(MusicGridFragment.MUSIC_GRID_FRAGMENT_FLAG, flag);
         mGridFragment.setArguments(bundle);
-        transaction.hide(mMusicListFragment);
-        transaction.add(R.id.main_fl, mGridFragment);
+        transaction.replace(R.id.main_fl, mGridFragment);
+
+        transaction.addToBackStack(null);
+        mFragmentStack.push(flag);
         transaction.commit();
     }
 
-    @Override
-    public void load(int index) {
-        if (isNeedUpdate) {
-            try {
-                mService.updateMusicList(mMusicList, index);
-                isNeedUpdate = false;
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-        super.load(index);
-
+    private void popFragment() {
+        mFragmentManager.popBackStack();
+        mFragmentStack.pop();
     }
+
 
     @Override
     public void update(List<Music> musicList) {
         mMusicList = musicList;
-        isNeedUpdate = true;
         mHandler.sendEmptyMessage(DATA_UPDATE);
+    }
+
+    @Override
+    public void updateMusicList(List<Music> musicList) {
+        super.updateMusicList(musicList);
+        resetFragment(musicList);
+    }
+
+    private void resetFragment(List<Music> musicList) {
+        while (mFragmentStack.size() > 1) {
+            mFragmentManager.popBackStackImmediate();
+            mFragmentStack.pop();
+        }
+        mMusicListFragment.updateData(musicList);
     }
 
     private class UIHandler extends Handler {
@@ -215,7 +232,7 @@ public class MainActivity extends BaseActivity
                     updateInformation();
                     break;
                 case DATA_UPDATE:
-                    loadListFragment();
+                    showList();
                     break;
             }
         }
@@ -226,6 +243,7 @@ public class MainActivity extends BaseActivity
         if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
             mDrawerLayout.closeDrawers();
         } else {
+            mFragmentStack.pop();
             super.onBackPressed();
         }
     }
