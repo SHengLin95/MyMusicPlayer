@@ -17,7 +17,14 @@ public class MediaUtil {
     private static final Uri ALBUM_ART_URI = Uri.parse("content://media/external/audio/albumart");
 
     public static Bitmap getAlbumImage(Context context, int albumId, int reqWidth, int reqHeight) {
-        Log.d("tag", "albumId: " + albumId);
+        Bitmap bitmap = CacheUtil.getBitmapFromMemoryCache(String.valueOf(albumId));
+        if (bitmap == null) {
+            bitmap = getAlbumImageFromSystem(context, albumId, reqWidth, reqHeight);
+        }
+        return bitmap;
+    }
+
+    public static Bitmap getAlbumImageFromSystem(Context context, int albumId, int reqWidth, int reqHeight) {
         ContentResolver resolver = context.getContentResolver();
         Uri uri = ContentUris.withAppendedId(ALBUM_ART_URI, albumId);
         InputStream is = null;
@@ -34,7 +41,7 @@ public class MediaUtil {
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             is = resolver.openInputStream(uri);
             bitmap = BitmapFactory.decodeStream(is, null, options);
-
+            CacheUtil.addBitmapToMemoryCache(String.valueOf(albumId), bitmap);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -78,6 +85,7 @@ public class MediaUtil {
         }
         return min + ":" + sec;
     }
+
 //    public static Bitmap decodeSampledBitmapFromResource(InputStream is,
 //                                                         int reqWidth, int reqHeight) {
 //        BitmapFactory.Options options = new BitmapFactory.Options();
