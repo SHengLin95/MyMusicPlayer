@@ -3,6 +3,7 @@ package com.example.shiheng.mymusicplayer.utils;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -24,7 +25,16 @@ public class MediaUtil {
         return bitmap;
     }
 
-    public static Bitmap getAlbumImageFromSystem(Context context, int albumId, int reqWidth, int reqHeight) {
+    public static Bitmap getBitmapByResource(Resources resources, int resId) {
+        Bitmap bitmap = CacheUtil.getBitmapFromMemoryCache(String.valueOf(resId));
+        if (bitmap == null) {
+            bitmap = BitmapFactory.decodeResource(resources, resId);
+            CacheUtil.addBitmapToMemoryCache(String.valueOf(resId), bitmap);
+        }
+        return bitmap;
+    }
+
+    private static Bitmap getAlbumImageFromSystem(Context context, int albumId, int reqWidth, int reqHeight) {
         ContentResolver resolver = context.getContentResolver();
         Uri uri = ContentUris.withAppendedId(ALBUM_ART_URI, albumId);
         InputStream is = null;
